@@ -1,0 +1,15 @@
+resource "helm_release" "vcluster" {
+  name       = "vcluster"
+  repository = "https://charts.loft.sh"
+  chart      = "vcluster"
+  namespace  = "vcluster-system"
+  create_namespace = true
+
+  values = [
+    <<-EOT
+    syncer:
+      extraArgs:
+        - --fake-kubelet-ip=10.0.0.1
+    EOT
+  ]
+}
