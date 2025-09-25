@@ -7,22 +7,15 @@ terraform {
       version = ">= 5.95.0, < 6.0.0"
     }
     
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.7"
-    }
+    # helm = {
+    #   source  = "hashicorp/helm"
+    #   version = "~> 2.7"
+    # }
 
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.16"
-    }
-  }
-
-  backend "s3" {
-    bucket         = "yinoue-terraform-statefile"
-    key            = "eks-vcluster/terraform.tfstate"
-    region         = "ap-northeast-1"
-    encrypt        = true
+    # kubernetes = {
+    #   source  = "hashicorp/kubernetes"
+    #   version = "~> 2.16"
+    # }
   }
 }
 
@@ -30,21 +23,38 @@ provider "aws" {
   region = var.aws_region
 }
 
-# EKS の認証に必要
-provider "kubernetes" {
-  host                   = module.eks.cluster_endpoint
-  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
-  token                  = data.aws_eks_cluster_auth.eks_auth.token
-}
+# providers.tf
 
-provider "helm" {
-  kubernetes {
-    host                   = module.eks.cluster_endpoint
-    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
-    token                  = data.aws_eks_cluster_auth.eks_auth.token
-  }
-}
+# provider "kubernetes" {
+#   host                   = module.eks.cluster_endpoint
+#   cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
 
-data "aws_eks_cluster_auth" "eks_auth" {
-  name = module.eks.cluster_name
-}
+#   exec {
+#     api_version = "client.authentication.k8s.io/v1beta1"
+#     command     = "aws"
+#     args = [
+#       "eks",
+#       "get-token",
+#       "--cluster-name",
+#       module.eks.cluster_name
+#     ]
+#   }
+# }
+
+# provider "helm" {
+#   kubernetes {
+#     host                   = module.eks.cluster_endpoint
+#     cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+
+#     exec {
+#       api_version = "client.authentication.k8s.io/v1beta1"
+#       command     = "aws"
+#       args = [
+#         "eks",
+#         "get-token",
+#         "--cluster-name",
+#         module.eks.cluster_name
+#       ]
+#     }
+#   }
+# }

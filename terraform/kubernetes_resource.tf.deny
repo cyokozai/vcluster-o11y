@@ -3,6 +3,9 @@ resource "kubernetes_namespace" "demo" {
   metadata {
     name = "demo"
   }
+  depends_on = [
+    aws_eks_access_policy_association.admin_policy_association
+  ]
 }
 
 resource "kubernetes_deployment" "nginx" {
@@ -38,6 +41,9 @@ resource "kubernetes_deployment" "nginx" {
       }
     }
   }
+  depends_on = [
+    aws_eks_access_policy_association.admin_policy_association
+  ]
 }
 
 resource "kubernetes_service" "nginx" {
@@ -56,4 +62,7 @@ resource "kubernetes_service" "nginx" {
     }
     type = "LoadBalancer"
   }
+  depends_on = [
+    aws_eks_access_policy_association.admin_policy_association
+  ]
 }
