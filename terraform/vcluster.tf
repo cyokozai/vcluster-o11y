@@ -1,17 +1,47 @@
-resource "helm_release" "vcluster" {
-  name             = var.cluster_name
-  namespace        = kubernetes_namespace.vcluster.metadata[0].name
-  create_namespace = false
+resource "kubernetes_config_map" "vcluster_config" {
+  metadata {
+    name      = "vcluster-config"
+    namespace = "vcluster-system"
+  }
 
+  data = {
+    "vcluster.yaml" = <<EOT
+sync:
+  fromHost:
+    ingressClasses:
+      enabled: true
+  toHost:
+    ingresses:
+      enabled: true
+EOT
+  }
+}
+
+resource "helm_release" "vcluster" {
+  name       = "vcluster"
   repository = "https://charts.loft.sh"
   chart      = "vcluster"
-  version    = var.vcluster_chart_version
-  
-  values = [
-    file("${path.module}/${var.vcluster_values_file}")
+  namespace  = "vcluster-system"
+  create_namespace = true
+
+  values = [<<EOF
+persistence:
+  enabled: true
+  size: 5Gi
+  storageClass: gp2
+
+extraVolumeMounts:
+  - name: vcluster-config
+    mountPath: /data/config
+extraVolumes:
+  - name: vcluster-config
+    configMap:
+      name: vcluster-config
+EOF
   ]
 
-  timeout = 600
-  
-  depends_on = [module.eks, kubernetes_namespace.vcluster]
+  set {
+    name  = "extraArgs[0]"
+    value = "--config=/data/config/vcluster.yaml"
+  }
 }
