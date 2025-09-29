@@ -32,7 +32,7 @@ variable "eks_access_entry_principal_arn" {
 
 variable "vcluster_namespace" {
   type        = string
-  default     = "test"
+  default     = "vcluster-demo"
   description = "Namespace to install vcluster"
 }
 

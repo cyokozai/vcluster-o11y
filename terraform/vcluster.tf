@@ -1,9 +1,3 @@
-resource "kubernetes_namespace" "vcluster" {
-  metadata {
-    name = var.vcluster_namespace
-  }
-}
-
 resource "helm_release" "vcluster" {
   name             = var.cluster_name
   namespace        = kubernetes_namespace.vcluster.metadata[0].name
