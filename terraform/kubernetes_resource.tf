@@ -100,4 +100,8 @@ resource "kubernetes_persistent_volume_claim" "vcluster_pvc" {
 
     storage_class_name = "gp2"
   }
+  
+  depends_on = [
+    kubernetes_namespace.vcluster
+  ]
 }
