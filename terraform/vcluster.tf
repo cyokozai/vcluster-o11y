@@ -1,6 +1,12 @@
+resource "kubernetes_namespace" "vcluster" {
+  metadata {
+    name = var.vcluster_namespace
+  }
+}
+
 resource "helm_release" "vcluster" {
   name             = var.cluster_name
-  namespace        = var.vcluster_namespace
+  namespace        = kubernetes_namespace.vcluster.metadata[0].name
   create_namespace = true
 
   repository = "https://charts.loft.sh"
@@ -10,6 +16,8 @@ resource "helm_release" "vcluster" {
   values = [
     file("${path.module}/${var.vcluster_values_file}")
   ]
+
+  timeout = 600
   
-  depends_on = [module.eks]
+  depends_on = [module.eks, kubernetes_namespace.vcluster]
 }
