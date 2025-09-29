@@ -1,7 +1,7 @@
 resource "helm_release" "vcluster" {
   name             = var.cluster_name
   namespace        = kubernetes_namespace.vcluster.metadata[0].name
-  create_namespace = true
+  create_namespace = false
 
   repository = "https://charts.loft.sh"
   chart      = "vcluster"

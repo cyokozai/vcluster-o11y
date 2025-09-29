@@ -1,12 +1,3 @@
-resource "kubernetes_namespace" "vcluster" {
-  metadata {
-    name = var.vcluster_namespace
-  }
-  depends_on = [
-    module.eks
-  ]
-}
-
 # resource "kubernetes_deployment" "nginx" {
 #   metadata {
 #     name      = "nginx"
@@ -83,6 +74,15 @@ resource "kubernetes_namespace" "vcluster" {
 #   ]
 # }
 
+resource "kubernetes_namespace" "vcluster" {
+  metadata {
+    name = var.vcluster_namespace
+  }
+  depends_on = [
+    module.eks
+  ]
+}
+
 resource "kubernetes_persistent_volume_claim" "vcluster_pvc" {
   metadata {
     name      = "vcluster-pvc"
@@ -100,7 +100,7 @@ resource "kubernetes_persistent_volume_claim" "vcluster_pvc" {
 
     storage_class_name = "gp2"
   }
-  
+
   depends_on = [
     kubernetes_namespace.vcluster
   ]
