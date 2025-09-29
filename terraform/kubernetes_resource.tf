@@ -83,6 +83,12 @@ resource "kubernetes_namespace" "vcluster" {
   ]
 }
 
+resource "kubernetes_namespace" "vcluster_system" {
+  metadata {
+    name = "vcluster-system"
+  }
+}
+
 resource "kubernetes_persistent_volume_claim" "vcluster_pvc" {
   metadata {
     name      = "vcluster-pvc"
