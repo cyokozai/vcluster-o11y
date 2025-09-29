@@ -15,7 +15,7 @@
 - クレデンシャルを取得
 
     ```shell
-    aws eks update-kubeconfig --region <リージョン名> --name <クラスタ名>
+    aws eks update-kubeconfig --region ap-northeast-1 --name demo-eks-vcluster
     ```
 
 - クラスタの確認
