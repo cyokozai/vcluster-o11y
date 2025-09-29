@@ -34,10 +34,10 @@ module "eks" {
     }
   }
 
-  tags = var.common_tags
-
   cluster_endpoint_public_access  = true
   cluster_endpoint_private_access = true
+
+  tags = var.common_tags
 }
 
 module "vpc" {
@@ -61,4 +61,7 @@ module "vpc" {
 resource "aws_eks_addon" "ebs_csi" {
   cluster_name = module.eks.cluster_name
   addon_name   = "aws-ebs-csi-driver"
+  service_account_role_arn = module.eks.cluster_iam_role_arn
+
+  tags = var.common_tags
 }
