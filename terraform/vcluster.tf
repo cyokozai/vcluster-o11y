@@ -1,28 +1,9 @@
-resource "kubernetes_config_map" "vcluster_config" {
-  metadata {
-    name      = "vcluster-config"
-    namespace = "vcluster-system"
-  }
-
-  data = {
-    "vcluster.yaml" = <<EOT
-sync:
-  fromHost:
-    ingressClasses:
-      enabled: true
-  toHost:
-    ingresses:
-      enabled: true
-EOT
-  }
-}
-
 resource "helm_release" "vcluster" {
   name       = "vcluster"
   repository = "https://charts.loft.sh"
   chart      = "vcluster"
-  namespace  = "vcluster-system"
-  create_namespace = true
+  namespace  = kubernetes_namespace.vcluster_system.metadata[0].name
+  create_namespace = false
 
   values = [<<EOF
 persistence:
@@ -44,4 +25,9 @@ EOF
     name  = "extraArgs[0]"
     value = "--config=/data/config/vcluster.yaml"
   }
+
+  depends_on = [
+    kubernetes_config_map.vcluster_config,
+    kubernetes_persistent_volume_claim.vcluster_pvc
+  ]
 }

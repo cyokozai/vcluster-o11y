@@ -78,6 +78,7 @@ resource "kubernetes_namespace" "vcluster" {
   metadata {
     name = var.vcluster_namespace
   }
+
   depends_on = [
     module.eks
   ]
@@ -87,12 +88,16 @@ resource "kubernetes_namespace" "vcluster_system" {
   metadata {
     name = "vcluster-system"
   }
+
+  depends_on = [
+    module.eks
+  ]
 }
 
 resource "kubernetes_persistent_volume_claim" "vcluster_pvc" {
   metadata {
     name      = "vcluster-pvc"
-    namespace = var.vcluster_namespace
+    namespace = kubernetes_namespace.vcluster_system.metadata[0].name
   }
 
   spec {
@@ -108,6 +113,29 @@ resource "kubernetes_persistent_volume_claim" "vcluster_pvc" {
   }
 
   depends_on = [
-    kubernetes_namespace.vcluster
+    kubernetes_namespace.vcluster_system
+  ]
+}
+
+resource "kubernetes_config_map" "vcluster_config" {
+  metadata {
+    name      = "vcluster-config"
+    namespace = kubernetes_namespace.vcluster_system.metadata[0].name
+  }
+
+  data = {
+    "vcluster.yaml" = <<EOT
+sync:
+  fromHost:
+    ingressClasses:
+      enabled: true
+  toHost:
+    ingresses:
+      enabled: true
+EOT
+  }
+
+  depends_on = [
+    kubernetes_namespace.vcluster_system
   ]
 }
