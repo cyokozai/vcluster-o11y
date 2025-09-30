@@ -11,8 +11,3 @@ releases:
     timeout: 1800
     values:
       - config/vcluster.yaml
-    hooks:
-      - events: ["presync"]
-        showlogs: true
-        command: "kubectl"
-        args: ["create", "namespace", "vcluster-system", "--dry-run=client", "-o", "yaml", "|", "kubectl", "apply", "-f", "-"]
