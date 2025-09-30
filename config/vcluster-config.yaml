@@ -1,9 +1,11 @@
-
----
 sync:
   fromHost:
     ingressClasses:
       enabled: true
+    storageClasses:
+      enabled: true
   toHost:
     ingresses:
+      enabled: true
+    services:
       enabled: true

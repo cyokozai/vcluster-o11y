@@ -18,29 +18,6 @@ resource "kubernetes_namespace" "vcluster_system" {
   ]
 }
 
-resource "kubernetes_persistent_volume_claim" "vcluster_pvc" {
-  metadata {
-    name      = "vcluster-pvc"
-    namespace = kubernetes_namespace.vcluster_system.metadata[0].name
-  }
-
-  spec {
-    access_modes = ["ReadWriteOnce"]
-
-    resources {
-      requests = {
-        storage = "5Gi"
-      }
-    }
-
-    storage_class_name = "gp2"
-  }
-
-  depends_on = [
-    kubernetes_namespace.vcluster_system
-  ]
-}
-
 resource "kubernetes_config_map" "vcluster_config" {
   metadata {
     name      = "vcluster-config"
@@ -60,6 +37,35 @@ EOT
   }
 
   depends_on = [
-    kubernetes_namespace.vcluster_system
+    kubernetes_namespace.vcluster_system,
+    module.eks
+  ]
+}
+
+resource "kubernetes_persistent_volume_claim" "vcluster_pvc" {
+  metadata {
+    name      = "vcluster-pvc"
+    namespace = kubernetes_namespace.vcluster_system.metadata[0].name
+  }
+
+  spec {
+    access_modes = ["ReadWriteOnce"]
+
+    resources {
+      requests = {
+        storage = "5Gi"
+      }
+    }
+
+    storage_class_name = "gp2"
+  }
+
+  timeouts {
+    create = "10m"
+  }
+
+  depends_on = [
+    kubernetes_namespace.vcluster_system,
+    module.eks
   ]
 }
