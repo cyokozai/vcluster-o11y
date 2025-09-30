@@ -10,4 +10,4 @@ releases:
     createNamespace: true
     timeout: 1800
     values:
-      - config/vcluster.yaml
+      - ../config/vcluster.yaml
