@@ -1,0 +1,13 @@
+repositories:
+  - name: loft
+    url: https://charts.loft.sh
+
+releases:
+  - name: vcluster
+    namespace: vcluster-system
+    chart: loft/vcluster
+    version: "0.19.4"
+    createNamespace: true
+    timeout: 1800
+    values:
+      - ../config/vcluster-config.yaml
