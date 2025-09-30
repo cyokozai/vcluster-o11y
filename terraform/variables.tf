@@ -16,6 +16,8 @@ variable "cluster_version" {
   description = "EKS Cluster version"
 }
 
+variable "vcluster_namespace" {
+
 variable "common_tags" {
   type = map(string)
   default = {
