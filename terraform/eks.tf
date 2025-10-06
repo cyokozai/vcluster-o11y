@@ -85,12 +85,10 @@ resource "aws_eks_addon" "ebs_csi" {
 
   service_account_role_arn = aws_iam_role.ebs_csi_driver_role.arn
 
-  # 新しい属性名に変更
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
 
-  # 明示的にバージョン指定（EKSバージョンに応じて調整）
-  addon_version = "v1.37.0-eksbuild.1"
+  addon_version = "v1.49.0-eksbuild.1"
 
   tags = var.common_tags
 }
