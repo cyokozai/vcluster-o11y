@@ -1,13 +1,35 @@
 repositories:
   - name: loft
     url: https://charts.loft.sh
+  
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+  
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
 
 releases:
   - name: vcluster
     namespace: vcluster-system
     chart: loft/vcluster
-    version: "0.19.4"
+    version: "0.29.0"
     createNamespace: true
     timeout: 1800
     values:
       - ../config/vcluster-config.yaml
+
+  - name: prometheus
+    namespace: monitoring      # PrometheusをデプロイするNamespace (例: monitoring)
+    chart: prometheus-community/prometheus
+    version: "25.21.0"         # ここにデプロイしたいバージョンを記述
+    createNamespace: true      # Namespaceが存在しない場合に自動作成
+    values:
+      - ../config/prometheus-values.yaml
+
+  - name: grafana
+    namespace: monitoring      # GrafanaをデプロイするNamespace (例: monitoring)
+    chart: grafana/grafana
+    version: "8.3.4"           # ここにデプロイしたいバージョンを記述
+    createNamespace: true
+    values:
+      - ../config/grafana-values.yaml
