@@ -19,17 +19,17 @@ releases:
       - ../config/vcluster-config.yaml
 
   - name: prometheus
-    namespace: monitoring      # PrometheusをデプロイするNamespace (例: monitoring)
+    namespace: monitoring
     chart: prometheus-community/prometheus
-    version: "25.21.0"         # ここにデプロイしたいバージョンを記述
-    createNamespace: true      # Namespaceが存在しない場合に自動作成
+    version: "77.13.0"
+    createNamespace: true
     values:
       - ../config/prometheus-values.yaml
 
   - name: grafana
-    namespace: monitoring      # GrafanaをデプロイするNamespace (例: monitoring)
+    namespace: monitoring
     chart: grafana/grafana
-    version: "8.3.4"           # ここにデプロイしたいバージョンを記述
+    version: "10.0.0"
     createNamespace: true
     values:
       - ../config/grafana-values.yaml
