@@ -7,13 +7,13 @@ module "eks" {
   vpc_id          = module.vpc.vpc_id
 
   create_cloudwatch_log_group = false
-  cluster_enabled_log_types = []
+  cluster_enabled_log_types   = []
 
   eks_managed_node_groups = {
     default = {
-      desired_size = 2
-      max_size     = 3
-      min_size     = 1
+      desired_size  = 2
+      max_size      = 3
+      min_size      = 1
       instance_types = ["t3.medium"]
     }
   }
@@ -22,7 +22,6 @@ module "eks" {
     self_admin = {
       principal_arn = var.eks_access_entry_principal_arn
       type          = "STANDARD"
-
       policy_associations = {
         cluster_admin = {
           policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
@@ -62,13 +61,13 @@ resource "aws_iam_role" "ebs_csi_driver_role" {
   name = "${var.cluster_name}-ebs-csi-driver-role"
 
   assume_role_policy = jsonencode({
-    Version = "2012-10-17"
+    Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow"
+        Effect = "Allow",
         Principal = {
           Service = "pods.eks.amazonaws.com"
-        }
+        },
         Action = "sts:AssumeRole"
       }
     ]
@@ -83,8 +82,15 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_policy" {
 resource "aws_eks_addon" "ebs_csi" {
   cluster_name = module.eks.cluster_name
   addon_name   = "aws-ebs-csi-driver"
+
   service_account_role_arn = aws_iam_role.ebs_csi_driver_role.arn
-  resolve_conflicts = "OVERWRITE"
+
+  # 新しい属性名に変更
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+
+  # 明示的にバージョン指定（EKSバージョンに応じて調整）
+  addon_version = "v1.37.0-eksbuild.1"
 
   tags = var.common_tags
 }
