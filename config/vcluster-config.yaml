@@ -9,9 +9,11 @@ sync:
       enabled: true
     services:
       enabled: true
+
 controlPlane:
-  persistence:
-    volumeClaim:
-      enabled: true
-      size: 10Gi
-      storageClass: gp3
+  statefulSet:
+    persistence:
+      volumeClaim:
+        enabled: true
+        size: 10Gi
+        storageClass: gp3
