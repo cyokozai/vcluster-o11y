@@ -5,8 +5,8 @@ repositories:
   - name: prometheus-community
     url: https://prometheus-community.github.io/helm-charts
   
-  - name: grafana
-    url: https://grafana.github.io/helm-charts
+  # - name: grafana
+  #   url: https://grafana.github.io/helm-charts
 
 releases:
   - name: vcluster
@@ -21,15 +21,15 @@ releases:
   - name: prometheus
     namespace: monitoring
     chart: prometheus-community/prometheus
-    version: "77.13.0"
+    version: "27.39.0"
     createNamespace: true
     values:
       - ../config/prometheus-values.yaml
 
-  - name: grafana
-    namespace: monitoring
-    chart: grafana/grafana
-    version: "10.0.0"
-    createNamespace: true
-    values:
-      - ../config/grafana-values.yaml
+  # - name: grafana
+  #   namespace: monitoring
+  #   chart: grafana/grafana
+  #   version: "10.0.0"
+  #   createNamespace: true
+  #   values:
+  #     - ../config/grafana-values.yaml
