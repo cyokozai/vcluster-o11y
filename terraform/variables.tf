@@ -20,7 +20,6 @@ variable "ebs_csi_name" {
   default     = "aws-ebs-csi-driver"
   type        = string
   description = "EKS Addon name"
-  
 }
 
 variable "ebs_csi_version" {
