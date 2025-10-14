@@ -87,8 +87,8 @@ resource "aws_iam_role_policy_attachment" "ebs_csi" {
 
 resource "aws_eks_addon" "ebs_csi" {
   cluster_name             = var.cluster_name
-  addon_name               = "aws-ebs-csi-driver"
-  addon_version            = "v1.50.1-eksbuild.1"
+  addon_name               = var.ebs_csi_name
+  addon_version            = var.ebs_csi_version
   service_account_role_arn = aws_iam_role.ebs_csi.arn
   depends_on = [
     aws_iam_role_policy_attachment.ebs_csi

@@ -16,6 +16,19 @@ variable "cluster_version" {
   description = "EKS Cluster version"
 }
 
+variable "ebs_csi_name" {
+  default     = "aws-ebs-csi-driver"
+  type        = string
+  description = "EKS Addon name"
+  
+}
+
+variable "ebs_csi_version" {
+  default     = "v1.50.1-eksbuild.1"
+  type        = string
+  description = "EKS Addon version"
+}
+
 variable "common_tags" {
   type = map(string)
   default = {
