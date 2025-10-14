@@ -3,13 +3,14 @@
 - Terraform 初期化を行う
 
     ```shell
-    terraform init
+    cd terraform
+    terraform init -reconfigure
     ```
 
 - 構築を開始
 
     ```shell
-    terraform apply
+    terraform apply -var-file="terraform.tfvars"
     ```
 
 - クレデンシャルを取得
@@ -23,8 +24,3 @@
     ```shell
     kubectl cluster-info
     ```
-
-<!-- - vCluster がインストールされていることを確認する
-
-    ```shell
-    ``` -->
