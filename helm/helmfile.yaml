@@ -1,7 +1,7 @@
 repositories:
   - name: loft
     url: https://charts.loft.sh
-  
+
   - name: prometheus-community
     url: https://prometheus-community.github.io/helm-charts
 
@@ -11,6 +11,10 @@ releases:
     chart: loft/vcluster
     version: "0.29.0"
     createNamespace: true
+    persistentVolumes:
+      enabled: true
+    persistentVolumeClaims:
+      enabled: true
     timeout: 1800
     values:
       - ../config/vcluster-config.yaml
@@ -20,5 +24,13 @@ releases:
     chart: prometheus-community/kube-prometheus-stack
     version: "77.13.0"
     createNamespace: true
+    persistentVolumes:
+      enabled: true
+    persistentVolumeClaims:
+      enabled: true
     values:
       - ../config/prometheus-values.yaml
+
+environments:
+  dev:
+    kubeContext: arn:aws:eks:ap-northeast-1
