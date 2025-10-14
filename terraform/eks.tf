@@ -7,13 +7,13 @@ module "eks" {
   vpc_id          = module.vpc.vpc_id
 
   create_cloudwatch_log_group = false
-  cluster_enabled_log_types = []
+  cluster_enabled_log_types   = []
 
   eks_managed_node_groups = {
     default = {
-      desired_size = 2
-      max_size     = 3
-      min_size     = 1
+      desired_size  = 2
+      max_size      = 3
+      min_size      = 1
       instance_types = ["t3.medium"]
     }
   }
@@ -22,7 +22,6 @@ module "eks" {
     self_admin = {
       principal_arn = var.eks_access_entry_principal_arn
       type          = "STANDARD"
-
       policy_associations = {
         cluster_admin = {
           policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
@@ -34,10 +33,10 @@ module "eks" {
     }
   }
 
-  tags = var.common_tags
-
   cluster_endpoint_public_access  = true
   cluster_endpoint_private_access = true
+
+  tags = var.common_tags
 }
 
 module "vpc" {
@@ -56,4 +55,42 @@ module "vpc" {
   enable_dns_hostnames = true
 
   tags = var.common_tags
+}
+
+data "aws_iam_policy_document" "ebs_csi_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+
+    principals {
+      type        = "Federated"
+      identifiers = [module.eks.oidc_provider_arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(module.eks.cluster_oidc_issuer_url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
+    }
+  }
+}
+
+resource "aws_iam_role" "ebs_csi" {
+  name               = "AmazonEKS_EBS_CSI_DriverRole"
+  assume_role_policy = data.aws_iam_policy_document.ebs_csi_assume_role_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "ebs_csi" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  role       = aws_iam_role.ebs_csi.name
+}
+
+resource "aws_eks_addon" "ebs_csi" {
+  cluster_name             = var.cluster_name
+  addon_name               = var.ebs_csi_name
+  addon_version            = var.ebs_csi_version
+  service_account_role_arn = aws_iam_role.ebs_csi.arn
+  depends_on = [
+    aws_iam_role_policy_attachment.ebs_csi
+  ]
 }

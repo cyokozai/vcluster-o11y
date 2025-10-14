@@ -2,30 +2,25 @@
 
 - Terraform 初期化を行う
 
-    ```shell
-    terraform init
-    ```
+  ```shell
+  cd terraform
+  terraform init -reconfigure
+  ```
 
 - 構築を開始
 
-    ```shell
-    terraform apply
-    ```
+  ```shell
+  terraform apply -var-file="terraform.tfvars"
+  ```
 
 - クレデンシャルを取得
 
-    ```shell
-    aws eks update-kubeconfig --region <リージョン名> --name <クラスタ名>
-    ```
+  ```shell
+  aws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME
+  ```
 
 - クラスタの確認
 
-    ```shell
-    kubectl cluster-info
-    ```
-
-<!-- - vCluster がインストールされていることを確認する
-
-    ```shell
-    ``` -->
-
+  ```shell
+  kubectl cluster-info
+  ```

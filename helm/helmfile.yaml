@@ -1,0 +1,58 @@
+repositories:
+  - name: loft
+    url: https://charts.loft.sh
+
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+
+---
+
+environments:
+  dev:
+    kubeContext: ${DEV_KUBE_CONTEXT}
+
+---
+
+releases:
+  - name: vcluster
+    namespace: vcluster-system
+    chart: loft/vcluster
+    version: "0.29.0"
+    createNamespace: true
+    timeout: 1800
+    values:
+    - sync:
+        fromHost:
+          ingressClasses:
+            enabled: true
+          storageClasses:
+            enabled: true
+        toHost:
+          ingresses:
+            enabled: true
+          services:
+            enabled: true
+      controlPlane:
+        statefulSet:
+          persistence:
+            volumeClaim:
+              enabled: true
+              size: 10Gi
+              storageClass: gp3
+
+  - name: kube-prometheus-stack
+    namespace: monitoring
+    chart: prometheus-community/kube-prometheus-stack
+    version: "77.13.0"
+    values:
+    - prometheusSpec:
+        scrapeInterval: "15s"
+        evaluationInterval: "15s"
+      additionalScrapeConfigs:
+      - job_name: 'prometheus'
+        static_configs:
+        - targets: ['localhost:9090']
+      persistentVolumes:
+        enabled: true
+      persistentVolumeClaims:
+        enabled: true
