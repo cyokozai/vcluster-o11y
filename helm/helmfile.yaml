@@ -23,12 +23,12 @@ releases:
     values:
     - sync:
         fromHost:
-        - ingressClasses:
+          ingressClasses:
             enabled: true
           storageClasses:
             enabled: true
         toHost:
-        - ingresses:
+          ingresses:
             enabled: true
           services:
             enabled: true
@@ -36,7 +36,7 @@ releases:
         statefulSet:
           persistence:
             volumeClaim:
-            - enabled: true
+              enabled: true
               size: 10Gi
               storageClass: gp3
 
@@ -44,16 +44,15 @@ releases:
     namespace: monitoring
     chart: prometheus-community/kube-prometheus-stack
     version: "77.13.0"
-    createNamespace: true
-    prometheusSpec:
-    - scrapeInterval: "15s"
-      evaluationInterval: "15s"
-    additionalScrapeConfigs:
-    - job_name: 'prometheus'
-      static_configs:
-      - targets: ['localhost:9090']
     values:
-    - persistentVolumes:
+    - prometheusSpec:
+        scrapeInterval: "15s"
+        evaluationInterval: "15s"
+      additionalScrapeConfigs:
+      - job_name: 'prometheus'
+        static_configs:
+        - targets: ['localhost:9090']
+      persistentVolumes:
         enabled: true
       persistentVolumeClaims:
         enabled: true
