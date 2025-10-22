@@ -13,6 +13,10 @@ spec:
       app: nginx
   template:
     metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "80"
       labels:
         app: nginx
     spec:
@@ -28,3 +32,15 @@ spec:
         - name: nginx-storage
           persistentVolumeClaim:
             claimName: nginx
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - nginx-server
+              topologyKey: kubernetes.io/hostname
