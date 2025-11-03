@@ -87,30 +87,21 @@ releases:
         kubernetes_sd_configs:
           - role: pod
         relabel_configs:
-          # 1. prometheus.io/scrape: "true" のアノテーションが付いているPodのみを監視対象として残す (keep)
           - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
             action: keep
             regex: true
-            
-          # 2. prometheus.io/path のアノテーションから、メトリクスのパスを取得する
           - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
             action: replace
             target_label: __metrics_path__
             regex: (.+)
-            
-          # 3. PodのIPアドレスと、prometheus.io/port アノテーションのポート番号を組み合わせて監視用のアドレスを生成する
           - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
             action: replace
             regex: ([^:]+)(?::\d+)?;(\d+)
             replacement: $1:$2
             target_label: __address__
-            
-          # 4. PodのNamespaceをメトリクスの `namespace` ラベルとして追加する
           - source_labels: [__meta_kubernetes_namespace]
             action: replace
             target_label: namespace
-            
-          # 5. Podの `app` ラベルを `job` ラベルとして採用する
           - source_labels: [__meta_kubernetes_pod_label_app]
             action: replace
             target_label: job
