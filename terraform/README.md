@@ -1,9 +1,23 @@
 # EKS クラスタの構築
 
-- Terraform 初期化を行う
+- IAM ユーザまたは IAM ロールの ARN を取得する
 
   ```shell
-  cd terraform
+  aws sts get-caller-identity
+  ```
+
+- `terraform.tfvars` を作成し、先ほど取得した ARN を指定する
+
+  ```hcl
+  eks_access_entry_principal_arn = "arn:aws:iam::hogehoge"
+  ```
+
+- `terraform` ディレクトリへ移動し初期化を行う
+
+  ```shell
+  terraform init
+
+  # 2回目以降
   terraform init -reconfigure
   ```
 
@@ -23,4 +37,10 @@
 
   ```shell
   kubectl cluster-info
+  ```
+
+- クラスタを破棄
+
+  ```shell
+  terraform destroy -var-file="terraform.tfvars"
   ```

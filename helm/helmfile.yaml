@@ -23,6 +23,10 @@ releases:
     values:
     - sync:
         fromHost:
+          nodes:
+            enabled: true
+          priorityClasses:
+            enabled: true
           ingressClasses:
             enabled: true
           storageClasses:
@@ -33,12 +37,29 @@ releases:
           services:
             enabled: true
       controlPlane:
+        replicas: 3
+        backingStore:
+          database:
+            secretName: "vcluster-db-secret"
         statefulSet:
           persistence:
             volumeClaim:
               enabled: true
               size: 10Gi
               storageClass: gp2
+      serviceMonitor:
+        enabled: true
+      policies:
+        podSecurityStandard: "baseline" # Pod Security Standard (PSS) をbaselineに設定
+        networkPolicy:
+          enabled: true
+        resourceQuota: # 仮想クラスタがホストで消費できるリソース上限
+          enabled: true
+          quota:
+            requests.cpu: "4"
+            requests.memory: "16Gi"
+            limits.cpu: "8"
+            limits.memory: "32Gi"
 
   - name: kube-prometheus-stack
     namespace: monitoring
