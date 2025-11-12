@@ -162,7 +162,12 @@ releases:
       - "-f"
       - "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml"
     values:
-    - persistentVolumes:
+    - prometheusOperator:
+        admissionWebhooks:
+          enabled: false
+        tls:
+          enabled: false
+      persistentVolumes:
         enabled: true
       persistentVolumeClaims:
         enabled: true
