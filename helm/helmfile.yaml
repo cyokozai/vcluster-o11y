@@ -37,18 +37,27 @@ releases:
           services:
             enabled: true
       controlPlane:
-        replicas: 3
         backingStore:
-          database:
-            secretName: "vcluster-db-secret"
+          etcd:
+            deploy:
+              enabled: true
+              statefulSet:
+                persistence:
+                  volumeClaim:
+                    enabled: true
+                    size: 5Gi
+                    storageClass: gp2
         statefulSet:
           persistence:
             volumeClaim:
               enabled: true
               size: 10Gi
               storageClass: gp2
-      serviceMonitor:
-        enabled: true
+          scheduling:
+            podManagementPolicy: Parallel
+      deploy:
+        metricsServer:
+          enabled: false
       policies:
         podSecurityStandard: "baseline" # Pod Security Standard (PSS) をbaselineに設定
         networkPolicy:
@@ -60,11 +69,17 @@ releases:
             requests.memory: "16Gi"
             limits.cpu: "8"
             limits.memory: "32Gi"
+      integrations:
+        metricsServer:
+          enabled: false
+          nodes: true
+          pods: true
 
   - name: kube-prometheus-stack
     namespace: monitoring
     chart: prometheus-community/kube-prometheus-stack
     version: "77.13.0"
+    createNamespace: true
     values:
     - persistentVolumes:
         enabled: true
