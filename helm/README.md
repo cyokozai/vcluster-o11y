@@ -2,26 +2,32 @@
 
 - Set ARN
 
-  ```shell
+  ```bash
   export DEV_KUBE_CONTEXT=$(aws eks describe-cluster --region $REGION --name $CLUSTER_NAME --query "cluster.arn" --output text)
   echo $DEV_KUBE_CONTEXT
   ```
 
 - Set repositories
 
-  ```shell
+  ```bash
   helmfile repos -f helm/helmfile.yaml
   ```
 
 - Update the repositories
 
-  ```shell
+  ```bash
   helm repo update
   ```
 
-- Install custom resource
+- Sync up custom resources
 
-  ```shell
+  ```bash
+  helmfile sync -f helm/helmfile.yaml
+  ```
+
+- Apply custom resources
+
+  ```bash
   helmfile apply -f helm/helmfile.yaml
   ```
 
@@ -29,7 +35,7 @@
   - Prometheus
     - Run the following command
 
-      ```shell
+      ```bash
       kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:9090
       ```
 
@@ -37,7 +43,7 @@
   - Grafana
     - Run the following command
 
-      ```shell
+      ```bash
       kubectl port-forward svc/kube-prometheus-stack-grafana  -n monitoring 3000:80
       ```
 
@@ -45,6 +51,6 @@
   - vCluster
     - Run the following command
 
-      ```shell
+      ```bash
       vcluster list
       ```
