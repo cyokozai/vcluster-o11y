@@ -1,0 +1,262 @@
+repositories:
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+
+---
+
+environments:
+  dev:
+    kubeContext: ${DEV_KUBE_CONTEXT}
+
+---
+
+releases:
+  - name: vcluster
+    namespace: vcluster-system
+    chart: loft/vcluster
+    version: "0.29.0"
+    createNamespace: true
+    timeout: 1800
+    values:
+    - sync:
+        fromHost:
+          nodes:
+            enabled: true
+          priorityClasses:
+            enabled: true
+          ingressClasses:
+            enabled: true
+          storageClasses:
+            enabled: true
+        toHost:
+          ingresses:
+            enabled: true
+          services:
+            enabled: true
+      controlPlane:
+        backingStore:
+          etcd:
+            deploy:
+              enabled: true
+              statefulSet:
+                persistence:
+                  volumeClaim:
+                    enabled: true
+                    size: 5Gi
+                    storageClass: gp3
+        statefulSet:
+          persistence:
+            volumeClaim:
+              enabled: true
+              size: 10Gi
+              storageClass: gp3
+          scheduling:
+            podManagementPolicy: Parallel
+      deploy:
+        metricsServer:
+          enabled: false
+      policies:
+        podSecurityStandard: "baseline"
+        networkPolicy:
+          enabled: true
+        resourceQuota:
+          enabled: true
+          quota:
+            requests.cpu: "4"
+            requests.memory: "16Gi"
+            limits.cpu: "8"
+            limits.memory: "32Gi"
+      integrations:
+        metricsServer:
+          enabled: false
+          nodes: true
+          pods: true
+
+  # --- [追加] Grafana Tempo (トレースバックエンド) ---
+  - name: tempo
+    namespace: monitoring
+    chart: grafana/tempo
+    version: "1.10.3"
+    values:
+    - persistence:
+        enabled: true
+        size: 10Gi
+      # 本番EKSではS3を推奨しますが、まずはEBS(PVC)で動く構成にします
+      storage:
+        trace:
+          backend: local
+          local:
+            path: /var/tempo/traces
+          wal:
+            path: /var/tempo/wal
+
+  # --- [追加] Grafana Alloy (OTel Collector & Agent) ---
+  - name: alloy
+    namespace: monitoring
+    chart: grafana/alloy
+    version: "0.9.1"
+    values:
+    - alloy:
+        configMap:
+          create: true
+          content: |
+            // OTLPレシーバー: アプリからのデータを待ち受ける
+            otelcol.receiver.otlp "default" {
+              grpc { endpoint = "0.0.0.0:4317" }
+              http { endpoint = "0.0.0.0:4318" }
+              
+              output {
+                metrics = [prometheus.remote_write.default.receiver]
+                traces  = [otelcol.exporter.otlp.tempo.input]
+              }
+            }
+
+            // Tempoへのエクスポート (Trace)
+            otelcol.exporter.otlp "tempo" {
+              client {
+                endpoint = "tempo.monitoring.svc.cluster.local:4317"
+                tls {
+                  insecure = true
+                }
+              }
+            }
+
+            // Prometheusへのエクスポート (Metrics)
+            prometheus.remote_write "default" {
+              endpoint {
+                // kube-prometheus-stackのService名を指定
+                url = "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+              }
+            }
+
+  - name: kube-prometheus-stack
+    namespace: monitoring
+    chart: prometheus-community/kube-prometheus-stack
+    version: "77.13.0"
+    createNamespace: true
+    # Hooksは既存のまま維持
+    hooks:
+    - events: ["presync"]
+      showlogs: true
+      command: "kubectl"
+      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml"]
+    - events: ["presync"]
+      showlogs: true
+      command: "kubectl"
+      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagers.yaml"]
+    - events: ["presync"]
+      showlogs: true
+      command: "kubectl"
+      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml"]
+    - events: ["presync"]
+      showlogs: true
+      command: "kubectl"
+      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_probes.yaml"]
+    - events: ["presync"]
+      showlogs: true
+      command: "kubectl"
+      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_prometheusagents.yaml"]
+    - events: ["presync"]
+      showlogs: true
+      command: "kubectl"
+      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml"]
+    - events: ["presync"]
+      showlogs: true
+      command: "kubectl"
+      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml"]
+    - events: ["presync"]
+      showlogs: true
+      command: "kubectl"
+      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_scrapeconfigs.yaml"]
+    - events: ["presync"]
+      showlogs: true
+      command: "kubectl"
+      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml"]
+    - events: ["presync"]
+      showlogs: true
+      command: "kubectl"
+      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml"]
+    values:
+    # [追加] GrafanaにTempoデータソースを自動登録
+    - grafana:
+        additionalDataSources:
+          - name: Tempo
+            type: tempo
+            uid: tempo
+            url: http://tempo.monitoring.svc.cluster.local:3100
+            access: proxy
+            jsonData:
+              # トレースとメトリクス(Prometheus)を連携させる設定
+              # GrafanaのExploreでログ→トレースへのジャンプなどが容易になります
+              tracesToLogs:
+                datasourceUid: 'prometheus'
+              nodeGraph:
+                enabled: true
+    - prometheusOperator:
+        admissionWebhooks:
+          enabled: false
+        tls:
+          enabled: false
+      persistentVolumes:
+        enabled: true
+      persistentVolumeClaims:
+        enabled: true
+      prometheusSpec:
+        scrapeInterval: "15s"
+        evaluationInterval: "15s"
+        # [追加] AlloyからのRemote Writeを受け入れる設定
+        enableFeatures:
+          - remote-write-receiver
+      additionalScrapeConfigs:
+      - job_name: 'prometheus'
+        static_configs:
+        - targets: ['localhost:9090']
+      - job_name: kube-etcd
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file:   /etc/prometheus/secrets/etcd-client-cert/etcd-ca
+          cert_file: /etc/prometheus/secrets/etcd-client-cert/etcd-client
+          key_file:  /etc/prometheus/secrets/etcd-client-cert/etcd-client-key
+        relabel_configs:
+        - action: labelmap
+          regex: __meta_kubernetes_node_label_(.+)
+        - source_labels: [__address__]
+          action: replace
+          target_label: __address__
+          regex: ([^:;]+):(\d+)
+          replacement: ${1}:2379
+        - source_labels: [__meta_kubernetes_node_name]
+          action: keep
+          regex: .*mst.*
+        - source_labels: [__meta_kubernetes_node_name]
+          action: replace
+          target_label: node
+          regex: (.*)
+          replacement: ${1}
+        metric_relabel_configs:
+        - regex: (kubernetes_io_hostname|failure_domain_beta_kubernetes_io_region|beta_kubernetes_io_os|beta_kubernetes_io_arch|beta_kubernetes_io_instance_type|failure_domain_beta_kubernetes_io_zone)
+          action: labeldrop
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: replace
+            target_label: job
