@@ -11,68 +11,6 @@ environments:
 ---
 
 releases:
-  - name: vcluster
-    namespace: vcluster-system
-    chart: loft/vcluster
-    version: "0.29.0"
-    createNamespace: true
-    timeout: 1800
-    values:
-    - sync:
-        fromHost:
-          nodes:
-            enabled: true
-          priorityClasses:
-            enabled: true
-          ingressClasses:
-            enabled: true
-          storageClasses:
-            enabled: true
-        toHost:
-          ingresses:
-            enabled: true
-          services:
-            enabled: true
-      controlPlane:
-        backingStore:
-          etcd:
-            deploy:
-              enabled: true
-              statefulSet:
-                persistence:
-                  volumeClaim:
-                    enabled: true
-                    size: 5Gi
-                    storageClass: gp3
-        statefulSet:
-          persistence:
-            volumeClaim:
-              enabled: true
-              size: 10Gi
-              storageClass: gp3
-          scheduling:
-            podManagementPolicy: Parallel
-      deploy:
-        metricsServer:
-          enabled: false
-      policies:
-        podSecurityStandard: "baseline"
-        networkPolicy:
-          enabled: true
-        resourceQuota:
-          enabled: true
-          quota:
-            requests.cpu: "4"
-            requests.memory: "16Gi"
-            limits.cpu: "8"
-            limits.memory: "32Gi"
-      integrations:
-        metricsServer:
-          enabled: false
-          nodes: true
-          pods: true
-
-  # --- [追加] Grafana Tempo (トレースバックエンド) ---
   - name: tempo
     namespace: monitoring
     chart: grafana/tempo
@@ -81,7 +19,7 @@ releases:
     - persistence:
         enabled: true
         size: 10Gi
-      # 本番EKSではS3を推奨しますが、まずはEBS(PVC)で動く構成にします
+        storageClass: gp3
       storage:
         trace:
           backend: local
@@ -90,11 +28,10 @@ releases:
           wal:
             path: /var/tempo/wal
 
-  # --- [追加] Grafana Alloy (OTel Collector & Agent) ---
   - name: alloy
     namespace: monitoring
     chart: grafana/alloy
-    version: "0.9.1"
+    version: "1.11.3"
     values:
     - alloy:
         configMap:
