@@ -1,0 +1,57 @@
+# ------------------------------------------------------------------- #
+# Helmfile for vCluster Tenant Application (OpenTelemetry Demo)       #
+# ------------------------------------------------------------------- #
+
+repositories:
+  - name: open-telemetry
+    url: https://open-telemetry.github.io/opentelemetry-helm-charts
+
+---
+environments:
+  dev:
+    kubeContext: ${DEV_KUBE_CONTEXT}
+
+---
+
+releases:
+  - name: otel-demo
+    namespace: otel-demo
+    chart: open-telemetry/opentelemetry-demo
+    version: "0.38.6"
+    createNamespace: true
+    values:
+    - default:
+        jaeger: { enabled: false }
+        prometheus: { enabled: false }
+        grafana: { enabled: false }
+        opensearch: { enabled: false }
+    - featureflagservice:
+        env:
+          - name: FEATURE_FLAG_GRPC_SERVICE
+            value: "featureflagservice:50053"
+          - name: FEATURE_FLAG_PRODUCT_CATALOG_FAILURE
+            value: "0" 
+    - opentelemetry-collector:
+        config:
+          exporters:
+            otlp/alloy:
+              endpoint: "alloy.monitoring.svc.cluster.local:4317"
+              tls:
+                insecure: true
+          service:
+            pipelines:
+              traces:
+                exporters: [otlp/alloy, spanmetrics]
+              metrics:
+                exporters: [otlp/alloy, spanmetrics]
+              logs:
+                exporters: [otlp/alloy]
+    - components:
+        frontend:
+          resources:
+            limits:
+              memory: 200Mi
+        cartService:
+          resources:
+            limits:
+              memory: 500Mi

@@ -1,5 +1,15 @@
 # helmfile
 
+## Resources
+
+- [vCluster](https://artifacthub.io/packages/helm/loft/vcluster)
+- [kube prometheus stack](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack)
+- [Grafana/alloy](https://artifacthub.io/packages/helm/grafana/alloy)
+- [Grafana/tempo](https://artifacthub.io/packages/helm/grafana/tempo)
+- [OpenTelemetry/demo](https://artifacthub.io/packages/helm/opentelemetry-helm/opentelemetry-demo)
+
+## Usage
+
 - Set your region and cluster name
 
   ```bash
@@ -41,24 +51,22 @@
 
 - Confirm the softwares
   - Prometheus
-    - Run the following command
 
-      ```bash
-      kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:9090
-      ```
+    ```bash
+    kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:9090
+    ```
 
     - http://localhost:9090/
   - Grafana
-    - Run the following command
-
+    - Grafana Dashbord
+  
       ```bash
       kubectl port-forward svc/kube-prometheus-stack-grafana  -n monitoring 3000:80
       ```
 
     - http://localhost:3000/
   - vCluster
-    - Run the following command
 
-      ```bash
-      vcluster list
-      ```
+    ```bash
+    vcluster list
+    ```
