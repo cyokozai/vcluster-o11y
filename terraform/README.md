@@ -27,6 +27,21 @@
   terraform apply -var-file="terraform.tfvars"
   ```
 
+- リージョンとクラスタ名を変数に保存
+
+  ```bash
+  export REGION="ap-northeast-1" &&\
+  export CLUSTER_NAME="demo-eks-vcluster" &&\
+  echo "$REGION\n$CLUSTER_NAME"
+  ```
+
+- ARNを取得
+
+  ```bash
+  export DEV_KUBE_CONTEXT=$(aws eks describe-cluster --region $REGION --name $CLUSTER_NAME --query "cluster.arn" --output text) &&\
+  echo $DEV_KUBE_CONTEXT
+  ```
+
 - クレデンシャルを取得
 
   ```shell

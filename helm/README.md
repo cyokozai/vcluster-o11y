@@ -10,21 +10,6 @@
 
 ## Usage
 
-- Set your region and cluster name
-
-  ```bash
-  export REGION="ap-northeast-1" &&\
-  export CLUSTER_NAME="demo-eks-vcluster" &&\
-  echo "$REGION\n$CLUSTER_NAME"
-  ```
-
-- Set ARN
-
-  ```bash
-  export DEV_KUBE_CONTEXT=$(aws eks describe-cluster --region $REGION --name $CLUSTER_NAME --query "cluster.arn" --output text) &&\
-  echo $DEV_KUBE_CONTEXT
-  ```
-
 - Set repositories
 
   ```bash

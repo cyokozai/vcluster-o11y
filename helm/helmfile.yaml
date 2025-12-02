@@ -134,47 +134,6 @@ releases:
     chart: prometheus-community/kube-prometheus-stack
     version: "79.10.0"
     createNamespace: true
-    hooks:
-    - events: ["presync"]
-      showlogs: true
-      command: "kubectl"
-      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml"]
-    - events: ["presync"]
-      showlogs: true
-      command: "kubectl"
-      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagers.yaml"]
-    - events: ["presync"]
-      showlogs: true
-      command: "kubectl"
-      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml"]
-    - events: ["presync"]
-      showlogs: true
-      command: "kubectl"
-      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_probes.yaml"]
-    - events: ["presync"]
-      showlogs: true
-      command: "kubectl"
-      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_prometheusagents.yaml"]
-    - events: ["presync"]
-      showlogs: true
-      command: "kubectl"
-      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml"]
-    - events: ["presync"]
-      showlogs: true
-      command: "kubectl"
-      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml"]
-    - events: ["presync"]
-      showlogs: true
-      command: "kubectl"
-      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_scrapeconfigs.yaml"]
-    - events: ["presync"]
-      showlogs: true
-      command: "kubectl"
-      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml"]
-    - events: ["presync"]
-      showlogs: true
-      command: "kubectl"
-      args: ["apply", "--server-side", "-f", "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml"]
     values:
     - grafana:
         additionalDataSources:
