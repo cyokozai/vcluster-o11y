@@ -6,13 +6,13 @@
   aws sts get-caller-identity
   ```
 
-- `terraform.tfvars` を作成し、先ほど取得した ARN を指定する
+- `terraform` ディレクトリへ移動し、 `terraform.tfvars` を作成し、先ほど取得した ARN を指定する
 
   ```hcl
   eks_access_entry_principal_arn = "arn:aws:iam::hogehoge"
   ```
 
-- `terraform` ディレクトリへ移動し初期化を行う
+- 初期化を行う
 
   ```shell
   terraform init
