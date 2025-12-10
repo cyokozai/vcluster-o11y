@@ -8,6 +8,9 @@ repositories:
   - name: prometheus-community
     url: https://prometheus-community.github.io/helm-charts
 
+  - name: cilium
+    url: https://helm.cilium.io/
+
 ---
 
 environments:
@@ -17,10 +20,42 @@ environments:
 ---
 
 releases:
+  - name: cilium
+    namespace: kube-system
+    chart: cilium/cilium
+    version: "1.18.4"
+    values:
+      - eni:
+          enabled: true # ENI mode (Native Routing) 
+      - ipam:
+          mode: eni
+      - egressMasqueradeInterfaces: eth0
+      - routingMode: native
+      - hubble:
+          relay:
+            enabled: true
+          ui:
+            enabled: true
+          metrics:
+            enabled:
+              - dns:query;ignoreAAAA
+              - drop
+              - tcp
+              - flow
+              - port-distribution
+              - icmp
+              - http
+            serviceMonitor:
+              enabled: true
+      - prometheus:
+          enabled: true
+          serviceMonitor:
+            enabled: true
+
   - name: vcluster
     namespace: vcluster-system
     chart: loft/vcluster
-    version: "0.30.2"
+    version: "0.30.3"
     createNamespace: true
     timeout: 1800
     values:
@@ -98,7 +133,7 @@ releases:
   - name: alloy
     namespace: monitoring
     chart: grafana/alloy
-    version: "1.4.0"
+    version: "0.5.0"
     values:
     - alloy:
         configMap:
@@ -132,7 +167,7 @@ releases:
   - name: kube-prometheus-stack
     namespace: monitoring
     chart: prometheus-community/kube-prometheus-stack
-    version: "79.10.0"
+    version: "80.2.0"
     createNamespace: true
     values:
     - grafana:
@@ -159,9 +194,11 @@ releases:
       prometheusSpec:
         scrapeInterval: "15s"
         evaluationInterval: "15s"
-        # [追加] AlloyからのRemote Writeを受け入れる設定
         enableFeatures:
           - remote-write-receiver
+        serviceMonitorSelectorNilUsesHelmValues: false
+        serviceMonitorSelector: {}
+        serviceMonitorNamespaceSelector: {}
       additionalScrapeConfigs:
       - job_name: 'prometheus'
         static_configs:
