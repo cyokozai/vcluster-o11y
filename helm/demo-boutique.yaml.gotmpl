@@ -1,31 +1,25 @@
-# demo-boutique.yaml
 # Google Microservices Demo (Online Boutique) Distributed Deployment
 
 helmDefaults:
   wait: true
   timeout: 600
 
-repositories:
-  - name: onlineboutique
-    url: oci://us-docker.pkg.dev/online-boutique-ci/charts/onlineboutique
-
 environments:
-  demo-cluster-0:
-    # Frontend / Entrypoint Cluster
+  demo-cluster-0: # Frontend / Entrypoint Cluster
     kubeContext: vcluster_demo-cluster-0_demo-cluster-0_${EKSCONTEXT}
   
-  demo-cluster-1:
-    # Product & Data Cluster
+  demo-cluster-1: # Product & Data Cluster
     kubeContext: vcluster_demo-cluster-1_demo-cluster-1_${EKSCONTEXT}
   
-  demo-cluster-2:
-    # Transaction & Backend Cluster
+  demo-cluster-2: # Transaction & Backend Cluster
     kubeContext: vcluster_demo-cluster-2_demo-cluster-2_${EKSCONTEXT}
+
+---
 
 releases:
   - name: onlineboutique
     chart: oci://us-docker.pkg.dev/online-boutique-ci/charts/onlineboutique
-    version: "0.10.1"
+    version: "0.10.4"
     values:
       - opentelemetryCollector:
           create: false

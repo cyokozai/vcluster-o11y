@@ -2,11 +2,29 @@
 
 ## Resources
 
-- [vCluster](https://artifacthub.io/packages/helm/loft/vcluster)
-- [kube prometheus stack](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack)
-- [Grafana/alloy](https://artifacthub.io/packages/helm/grafana/alloy)
-- [Grafana/tempo](https://artifacthub.io/packages/helm/grafana/tempo)
-- [OpenTelemetry/demo](https://artifacthub.io/packages/helm/opentelemetry-helm/opentelemetry-demo)
+- Deployment
+  - vCluster
+    - [GitHub](https://github.com/loft-sh/vcluster)
+    - [Artifact Hub](https://artifacthub.io/packages/helm/loft/vcluster)
+  - kube prometheus stack
+    - [GitHub](http://github.com/prometheus-operator/kube-prometheus)
+    - [Artifact Hub](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack)
+  - Grafana/Alloy
+    - [GitHub](https://github.com/grafana/alloy)
+    - [Artifact Hub](https://artifacthub.io/packages/helm/grafana/alloy)
+  - Grafana/Loki
+    - [GitHub](https://github.com/grafana/loki)
+    - [Artifact Hub](https://artifacthub.io/packages/helm/grafana/loki)
+  - Grafana/Tempo
+    - [GtiHub](https://github.com/grafana/tempo)
+    - [Artifact Hub](https://artifacthub.io/packages/helm/grafana/tempo)
+  - Cilium
+    - [GitHub](https://github.com/cilium/cilium)
+    - [Artifact Hub](https://artifacthub.io/packages/helm/cilium/cilium)
+- Demo application
+  - Google Microservices Demo
+    - [GiHub](https://github.com/GoogleCloudPlatform/microservices-demo)
+    - [Google Cloud Docs](https://docs.cloud.google.com/service-mesh/docs/onlineboutique-install-kpt?hl=ja)
 
 ## Usage
 
