@@ -47,6 +47,7 @@ releases:
               - http
             serviceMonitor:
               enabled: true
+              trustCRDsExist: true
       - prometheus:
           enabled: true
           serviceMonitor:

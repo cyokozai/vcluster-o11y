@@ -1,6 +1,5 @@
-# ------------------------------------------------------------------- #
-# Helmfile for vCluster Tenant Application (OpenTelemetry Demo)       #
-# ------------------------------------------------------------------- #
+# demo-otel.yaml
+# Helmfile for vCluster Tenant Application (OpenTelemetry Demo)
 
 repositories:
   - name: open-telemetry

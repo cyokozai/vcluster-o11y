@@ -54,6 +54,15 @@
   kubectl cluster-info
   ```
 
+- gp3 StorageClass をデプロイ
+
+  ```bash
+  cd ..
+  kubectl apply -f manifests/storageclass/gp3-storageclass.yaml
+  ```
+
+---
+
 - クラスタを破棄
 
   ```shell

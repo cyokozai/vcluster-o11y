@@ -10,10 +10,16 @@
 
 ## Usage
 
+- move `helm` directory
+
+  ```bash
+  cd helm
+  ```
+
 - Set repositories
 
   ```bash
-  helmfile repos -f helm/helmfile.yaml
+  helmfile repos -f helmfile.yaml
   ```
 
 - Update the repositories
@@ -25,31 +31,30 @@
 - Sync up custom resources
 
   ```bash
-  helmfile sync -f helm/helmfile.yaml
+  helmfile sync -f helmfile.yaml
   ```
 
 - Apply custom resources
 
   ```bash
-  helmfile apply -f helm/helmfile.yaml
+  helmfile apply -f helmfile.yaml
   ```
 
 - Confirm the softwares
   - Prometheus
-
-    ```bash
-    kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:9090
-    ```
-
     - http://localhost:9090/
+
+      ```bash
+      kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:9090
+      ```
+
   - Grafana
-    - Grafana Dashbord
+    - http://localhost:3000/
   
       ```bash
       kubectl port-forward svc/kube-prometheus-stack-grafana  -n monitoring 3000:80
       ```
 
-    - http://localhost:3000/
   - vCluster
 
     ```bash
