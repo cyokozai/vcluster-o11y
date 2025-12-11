@@ -1,0 +1,78 @@
+# Helmfile to install Cilium with ClusterMesh enabled in each vCluster
+
+repositories:
+  - name: cilium
+    url: https://helm.cilium.io/
+
+releases:
+  - name: cilium-c0
+    chart: cilium/cilium
+    version: "1.18.4"
+    namespace: kube-system
+    kubeContext: vcluster_demo-cluster-0_demo-cluster-0_{{ env "EKSCONTEXT" }}
+    values:
+      - cluster:
+          name: demo-cluster-0
+          id: 1
+      - cni:
+          exclusive: false
+      - socketPath: /run/k3s/containerd/containerd.sock
+      - clustermesh:
+          useAPIServer: true
+          apiserverImage:
+            image: quay.io/cilium/clustermesh-apiserver
+            tag: v1.18.4
+      - nodePort:
+          enabled: true
+      - hostServices:
+          enabled: false
+      - externalIPs:
+          enabled: true
+
+  - name: cilium-c1
+    chart: cilium/cilium
+    version: "1.18.4"
+    namespace: kube-system
+    kubeContext: vcluster_demo-cluster-1_demo-cluster-1_{{ env "EKSCONTEXT" }}
+    values:
+      - cluster:
+          name: demo-cluster-1
+          id: 2
+      - cni:
+          exclusive: false
+      - socketPath: /run/k3s/containerd/containerd.sock
+      - clustermesh:
+          useAPIServer: true
+          apiserverImage:
+            image: quay.io/cilium/clustermesh-apiserver
+            tag: v1.18.4
+      - nodePort:
+          enabled: true
+      - hostServices:
+          enabled: false
+      - externalIPs:
+          enabled: true
+
+  - name: cilium-c2
+    chart: cilium/cilium
+    version: "1.18.4"
+    namespace: kube-system
+    kubeContext: vcluster_demo-cluster-2_demo-cluster-2_{{ env "EKSCONTEXT" }}
+    values:
+      - cluster:
+          name: demo-cluster-2
+          id: 3
+      - cni:
+          exclusive: false
+      - socketPath: /run/k3s/containerd/containerd.sock
+      - clustermesh:
+          useAPIServer: true
+          apiserverImage:
+            image: quay.io/cilium/clustermesh-apiserver
+            tag: v1.18.4
+      - nodePort:
+          enabled: true
+      - hostServices:
+          enabled: false
+      - externalIPs:
+          enabled: true

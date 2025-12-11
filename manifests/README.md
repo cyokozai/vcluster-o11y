@@ -46,3 +46,17 @@
       demo-cluster-2 | demo-cluster-2  | Running | 0.30.2  |           | 58s  
       vcluster       | vcluster-system | Running | 0.30.3  |           | 24m
     ```
+
+- 各仮想クラスタのクレデンシャルを取得する
+
+  ```bash
+  # demo-cluster-0 の場合
+  vcluster connect demo-cluster-0
+  vcluster disconnect
+  ```
+
+- 各仮想クラスタに Cilium をインストールし、ネットワークを開通させる
+
+  ```bash
+  helmfile -f ../helm/cilium.yaml.gotmpl sync
+  ```

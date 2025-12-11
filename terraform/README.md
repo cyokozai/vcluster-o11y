@@ -52,6 +52,8 @@
 
   ```shell
   aws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME
+  export EKSCONTEXT="$(kubectl config current-context)"
+  echo $EKSCONTEXT
   ```
 
 - クラスタの確認
