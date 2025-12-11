@@ -22,6 +22,9 @@ releases:
           apiserverImage:
             image: quay.io/cilium/clustermesh-apiserver
             tag: v1.18.4
+          apiserver:
+            service:
+              nodePort: 32370
       - nodePort:
           enabled: true
       - hostServices:
@@ -46,6 +49,9 @@ releases:
           apiserverImage:
             image: quay.io/cilium/clustermesh-apiserver
             tag: v1.18.4
+          apiserver:
+            service:
+              nodePort: 32371
       - nodePort:
           enabled: true
       - hostServices:
@@ -70,6 +76,9 @@ releases:
           apiserverImage:
             image: quay.io/cilium/clustermesh-apiserver
             tag: v1.18.4
+          apiserver:
+            service:
+              nodePort: 32372
       - nodePort:
           enabled: true
       - hostServices:
