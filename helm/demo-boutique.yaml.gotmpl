@@ -4,6 +4,8 @@ helmDefaults:
   wait: true
   timeout: 600
 
+---
+
 environments:
   demo-cluster-0: # Frontend / Entrypoint Cluster
     kubeContext: vcluster_demo-cluster-0_demo-cluster-0_${EKSCONTEXT}

@@ -5,6 +5,7 @@ repositories:
     url: https://open-telemetry.github.io/opentelemetry-helm-charts
 
 ---
+
 environments:
   dev:
     kubeContext: ${DEV_KUBE_CONTEXT}

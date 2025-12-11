@@ -1,0 +1,41 @@
+# Helmfile to deploy Cilium in demo clusters
+
+repositories:
+  - name: cilium
+    url: https://helm.cilium.io/
+
+---
+
+environments:
+  demo-cluster-0:
+    kubeContext: vcluster_demo-cluster-0_demo-cluster-0_${EKSCONTEXT}
+  demo-cluster-1:
+    kubeContext: vcluster_demo-cluster-1_demo-cluster-1_${EKSCONTEXT}
+  demo-cluster-2:
+    kubeContext: vcluster_demo-cluster-2_demo-cluster-2_${EKSCONTEXT}
+
+---
+
+releases:
+  - name: cilium
+    chart: cilium/cilium
+    version: "1.18.4"
+    namespace: kube-system
+    values:
+      - cluster:
+          name: {{ .Environment.Name }}
+          id: {{ if eq .Environment.Name "demo-cluster-0" }}1{{ else if eq .Environment.Name "demo-cluster-1" }}2{{ else }}3{{ end }}
+      - cni:
+          exclusive: false
+      - socketPath: /run/k3s/containerd/containerd.sock
+      - clustermesh:
+          useAPIServer: true
+          apiserverImage:
+            image: quay.io/cilium/clustermesh-apiserver
+            tag: v1.18.4
+      - nodePort:
+          enabled: true
+      - hostServices:
+          enabled: false
+      - externalIPs:
+          enabled: true

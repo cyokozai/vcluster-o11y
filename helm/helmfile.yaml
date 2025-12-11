@@ -54,6 +54,7 @@ releases:
           enabled: true
           serviceMonitor:
             enabled: true
+            trustCRDsExist: true
 
   - name: vcluster
     namespace: vcluster-system
@@ -106,10 +107,10 @@ releases:
         resourceQuota:
           enabled: true
           quota:
-            requests.cpu: "4"
-            requests.memory: "16Gi"
-            limits.cpu: "8"
-            limits.memory: "32Gi"
+            requests.cpu: "2"
+            requests.memory: "8Gi"
+            limits.cpu: "4"
+            limits.memory: "24Gi"
       integrations:
         metricsServer:
           enabled: false

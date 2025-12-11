@@ -1,4 +1,10 @@
-# EKS クラスタの構築
+# 1\. EKS クラスタの構築
+
+- move `terraform` directory
+
+  ```bash
+  cd terraform
+  ```
 
 - IAM ユーザまたは IAM ロールの ARN を取得する
 
@@ -62,6 +68,12 @@
   ```
 
 ---
+
+- Helm で管理するリソースをアンインストール
+
+  ```bash
+  helmfile destroy
+  ```
 
 - クラスタを破棄
 

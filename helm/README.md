@@ -26,7 +26,7 @@
     - [GiHub](https://github.com/GoogleCloudPlatform/microservices-demo)
     - [Google Cloud Docs](https://docs.cloud.google.com/service-mesh/docs/onlineboutique-install-kpt?hl=ja)
 
-## Usage
+## Install
 
 - move `helm` directory
 
@@ -38,6 +38,7 @@
 
   ```bash
   helmfile repos -f helmfile.yaml
+  helmfile repos -f demo-otel.yaml
   ```
 
 - Update the repositories
@@ -46,35 +47,44 @@
   helm repo update
   ```
 
-- Sync up custom resources
+- Sync up custom resources to the host cluster
 
   ```bash
   helmfile sync -f helmfile.yaml
   ```
 
-- Apply custom resources
+- Apply custom resources to the host cluster
 
   ```bash
   helmfile apply -f helmfile.yaml
   ```
 
-- Confirm the softwares
-  - Prometheus
-    - http://localhost:9090/
+## Usage
 
-      ```bash
-      kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:9090
-      ```
-
-  - Grafana
-    - http://localhost:3000/
-  
-      ```bash
-      kubectl port-forward svc/kube-prometheus-stack-grafana  -n monitoring 3000:80
-      ```
-
-  - vCluster
+- Prometheus
+  - http://localhost:9090/
 
     ```bash
-    vcluster list
+    kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:9090
     ```
+
+- Grafana
+  - http://localhost:3000/
+
+    ```bash
+    kubectl port-forward svc/kube-prometheus-stack-grafana  -n monitoring 3000:80
+    ```
+
+- vCluster
+
+  ```bash
+  vcluster list
+  ```
+
+## Uninstall
+
+- Clean up
+
+  ```bash
+  helmfile destroy
+  ```
