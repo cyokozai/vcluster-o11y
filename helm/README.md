@@ -1,4 +1,4 @@
-# helmfile
+# Helmfile による各種リソースのインストール
 
 ## Resources
 
