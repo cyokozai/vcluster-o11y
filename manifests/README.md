@@ -58,5 +58,5 @@
 - 各仮想クラスタに Cilium をインストールし、ネットワークを開通させる
 
   ```bash
-  helmfile -f ../helm/cilium.yaml.gotmpl sync
+  helmfile sync -f ../helm/cilium.yaml.gotmpl
   ```
