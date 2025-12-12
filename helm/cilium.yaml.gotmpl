@@ -11,6 +11,7 @@ environments:
           name: demo-cluster-0
           id: 1
         meshPort: 32379
+        podCIDR: "10.10.0.0/16"
   
   demo-cluster-1:
     kubeContext: vcluster_demo-cluster-1_demo-cluster-1_{{ env "EKSCONTEXT" }}
@@ -19,6 +20,7 @@ environments:
           name: demo-cluster-1
           id: 2
         meshPort: 32380
+        podCIDR: "10.20.0.0/16"
 
   demo-cluster-2:
     kubeContext: vcluster_demo-cluster-2_demo-cluster-2_{{ env "EKSCONTEXT" }}
@@ -27,6 +29,7 @@ environments:
           name: demo-cluster-2
           id: 3
         meshPort: 32381
+        podCIDR: "10.30.0.0/16"
 
 ---
 
@@ -39,8 +42,21 @@ releases:
       - cluster:
           name: {{ .Values.cluster.name }}
           id: {{ .Values.cluster.id }}
-      - cni: { exclusive: false }
+      
+      # --- Networking Strategy - AWS CNI ---
+      - cni:
+          chainingMode: aws-cni
+          exclusive: false
+      - enableIPv4Masquerade: false
+      - routingMode: tunnel
+      - tunnelProtocol: vxlan
+      - endpointRoutes:
+          enabled: true
+      
+      # --- vCluster Integration ---
       - socketPath: /run/k3s/containerd/containerd.sock
+      
+      # --- Cluster Mesh ---
       - clustermesh:
           useAPIServer: true
           apiserverImage:
@@ -51,6 +67,10 @@ releases:
               type: NodePort
               nodePort: {{ .Values.meshPort }}
       
-      - nodePort: { enabled: true }
-      - hostServices: { enabled: false }
-      - externalIPs: { enabled: true }
+      # --- Service Types ---
+      - nodePort: 
+          enabled: true
+      - hostServices:
+          enabled: false
+      - externalIPs:
+          enabled: true
