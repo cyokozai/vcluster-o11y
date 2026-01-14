@@ -38,7 +38,6 @@
 
   ```bash
   helmfile repos -f helmfile.yaml
-  helmfile repos -f demo-otel.yaml
   ```
 
 - Update the repositories

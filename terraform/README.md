@@ -9,7 +9,7 @@
 - IAM ユーザまたは IAM ロールの ARN を取得する
 
   ```shell
-  aws sts get-caller-identity
+  aws sts get-caller-identity. 
   ```
 
 - `terraform` ディレクトリへ移動し、 `terraform.tfvars` を作成し、先ほど取得した ARN を指定する
@@ -41,19 +41,12 @@
   echo "$REGION\n$CLUSTER_NAME"
   ```
 
-- ARNを取得
-
-  ```bash
-  export DEV_KUBE_CONTEXT=$(aws eks describe-cluster --region $REGION --name $CLUSTER_NAME --query "cluster.arn" --output text) &&\
-  echo $DEV_KUBE_CONTEXT
-  ```
-
 - クレデンシャルを取得
 
   ```shell
   aws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME
-  export EKSCONTEXT="$(kubectl config current-context)"
-  echo $EKSCONTEXT
+  export DEV_KUBE_CONTEXT="$(kubectl config current-context)"
+  echo $DEV_KUBE_CONTEXT
   ```
 
 - クラスタの確認
@@ -74,7 +67,7 @@
 - Helm で管理するリソースをアンインストール
 
   ```bash
-  helmfile destroy
+  helmfile destroy --file ../helm/
   ```
 
 - クラスタを破棄

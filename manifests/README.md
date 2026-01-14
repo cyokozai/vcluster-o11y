@@ -3,22 +3,7 @@
 1. move `manifest` directory
 
     ```bash
-    cd manifest
-    ```
-
-1. vCluster 用に各ノードにラベルを貼る
-
-    ```bash
-    # Node 1 & 2
-    kubectl label node ip-<NODE_IP_1>.ap-northeast-1.compute.internal  vcluster=demo-0
-    kubectl label node ip-<NODE_IP_2>.ap-northeast-1.compute.internal vcluster=demo-0
-
-    # Node 3 & 4
-    kubectl label node ip-<NODE_IP_3>.ap-northeast-1.compute.internal vcluster=demo-1
-    kubectl label node ip-<NODE_IP_4>.ap-northeast-1.compute.internal vcluster=demo-1
-
-    # Node 5
-    kubectl label node ip-<NODE_IP_5>.ap-northeast-1.compute.internal vcluster=demo-2
+    cd manifests
     ```
 
 ## 3\.1 検証用仮想クラスタを作成 (単一)
@@ -44,9 +29,9 @@
       ```bash
       vcluster create demo-cluster-0 --namespace demo-cluster-0 \
         --values vclusterconfig/vcluster-cilium.yaml \
-        --connect=false \
-        --set sync.fromHost.nodes.selector.labels.vcluster=demo-0 \
-        --set controlPlane.statefulSet.scheduling.nodeSelector.vcluster=demo-0 
+        --set sync.fromHost.nodes.selector.labels.vcluster=demo-cluster-0 \
+        --set controlPlane.statefulSet.scheduling.nodeSelector.vcluster=demo-cluster-0
+      vcluster disconnect
       ```
 
     - `demo-cluster-1`
@@ -54,9 +39,9 @@
       ```bash
       vcluster create demo-cluster-1 --namespace demo-cluster-1 \
         --values vclusterconfig/vcluster-cilium.yaml \
-        --connect=false \
-        --set sync.fromHost.nodes.selector.labels.vcluster=demo-1 \
-        --set controlPlane.statefulSet.scheduling.nodeSelector.vcluster=demo-1
+        --set sync.fromHost.nodes.selector.labels.vcluster=demo-cluster-1 \
+        --set controlPlane.statefulSet.scheduling.nodeSelector.vcluster=demo-cluster-1
+      vcluster disconnect
       ```
 
     - `demo-cluster-2`
@@ -64,10 +49,27 @@
       ```bash
       vcluster create demo-cluster-2 --namespace demo-cluster-2 \
         --values vclusterconfig/vcluster-cilium.yaml \
-        --connect=false \
-        --set sync.fromHost.nodes.selector.labels.vcluster=demo-2 \
-        --set controlPlane.statefulSet.scheduling.nodeSelector.vcluster=demo-2
+        --set sync.fromHost.nodes.selector.labels.vcluster=demo-cluster-2 \
+        --set controlPlane.statefulSet.scheduling.nodeSelector.vcluster=demo-cluster-2
+      vcluster disconnect
       ```
+  
+    ```mermaid
+    graph LR
+        subgraph Local Mac
+            A[kubectl / Helm] -->|1. アクセス| B(Local Proxy Container)
+            B -.->|2. ポートフォワード| A
+        end
+
+        subgraph Internet
+            B == 3. 安全なトンネル (Kubernetes API経由) ==> C[AWS EKS Cluster]
+        end
+
+        subgraph AWS EKS Node
+            C --> D[vCluster Pod]
+            D --> E[vCluster API Server]
+        end
+    ```
 
 2. 作成したクラスタを確認
 
@@ -86,15 +88,7 @@
         vcluster       | vcluster-system | Running | 0.30.3  |           | 24m
       ```
 
-3. 各仮想クラスタのクレデンシャルを取得する
-
-    ```bash
-    # demo-cluster-0 の場合
-    vcluster connect demo-cluster-0
-    vcluster disconnect
-    ```
-
-4. 各仮想クラスタに Cilium をインストールし、ネットワークを開通させる
+3. 各仮想クラスタに Cilium をインストールし、ネットワークを開通させる
 
     ```bash
     helmfile sync -f ../helm/cilium.yaml.gotmpl -e demo-cluster-0
@@ -102,28 +96,28 @@
     helmfile sync -f ../helm/cilium.yaml.gotmpl -e demo-cluster-2
     ```
 
-5. Cluster 0 から 1へ接続
+4. Cluster 0 から 1へ接続
 
     ```bash
-    cilium clustermesh connect --context "vcluster_demo-cluster-0_demo-cluster-0_${EKSCONTEXT}" --destination-context "vcluster_demo-cluster-1_demo-cluster-1_${EKSCONTEXT}"
+    cilium clustermesh connect --context "vcluster_demo-cluster-0_demo-cluster-0_${DEV_KUBE_CONTEXT}" --destination-context "vcluster_demo-cluster-1_demo-cluster-1_${DEV_KUBE_CONTEXT}"
     ```
 
-6. Cluster 0 から 2へ接続
+5. Cluster 0 から 2へ接続
 
     ```bash
-    cilium clustermesh connect --context "vcluster_demo-cluster-0_demo-cluster-0_${EKSCONTEXT}" --destination-context "vcluster_demo-cluster-2_demo-cluster-2_${EKSCONTEXT}"
+    cilium clustermesh connect --context "vcluster_demo-cluster-0_demo-cluster-0_${DEV_KUBE_CONTEXT}" --destination-context "vcluster_demo-cluster-2_demo-cluster-2_${DEV_KUBE_CONTEXT}"
     ```
 
-7. Cluster 1 から 2へ接続
+6. Cluster 1 から 2へ接続
 
     ```bash
-    cilium clustermesh connect --context "vcluster_demo-cluster-1_demo-cluster-1_${EKSCONTEXT}" --destination-context "vcluster_demo-cluster-2_demo-cluster-2_${EKSCONTEXT}"
+    cilium clustermesh connect --context "vcluster_demo-cluster-1_demo-cluster-1_${DEV_KUBE_CONTEXT}" --destination-context "vcluster_demo-cluster-2_demo-cluster-2_${DEV_KUBE_CONTEXT}"
     ```
 
-8. Cluster 0 のステータス確認
+7. Cluster 0 のステータス確認
 
     ```bash
-    cilium clustermesh status --context "vcluster_demo-cluster-0_demo-cluster-0_${EKSCONTEXT}"
+    cilium clustermesh status --context "vcluster_demo-cluster-0_demo-cluster-0_${DEV_KUBE_CONTEXT}"
     ```
     
     - 出力結果
@@ -132,7 +126,7 @@
       
       ```
 
-9. 検証用アプリケーションを各仮想クラスタへインストール
+8. 検証用アプリケーションを各仮想クラスタへインストール
 
     ```bash
     helmfile -f ../helm/demo-boutique.yaml.gotmpl sync
