@@ -5,7 +5,7 @@ repositories:
 
 environments:
   demo-cluster-0:
-    kubeContext: vcluster_demo-cluster-0_demo-cluster-0_{{ env "EKSCONTEXT" }}
+    kubeContext: vcluster_demo-cluster-0_demo-cluster-0_{{ env "DEV_KUBE_CONTEXT" }}
     values:
       - cluster:
           name: demo-cluster-0
@@ -14,7 +14,7 @@ environments:
         podCIDR: "10.10.0.0/16"
   
   demo-cluster-1:
-    kubeContext: vcluster_demo-cluster-1_demo-cluster-1_{{ env "EKSCONTEXT" }}
+    kubeContext: vcluster_demo-cluster-1_demo-cluster-1_{{ env "DEV_KUBE_CONTEXT" }}
     values:
       - cluster:
           name: demo-cluster-1
@@ -23,7 +23,7 @@ environments:
         podCIDR: "10.20.0.0/16"
 
   demo-cluster-2:
-    kubeContext: vcluster_demo-cluster-2_demo-cluster-2_{{ env "EKSCONTEXT" }}
+    kubeContext: vcluster_demo-cluster-2_demo-cluster-2_{{ env "DEV_KUBE_CONTEXT" }}
     values:
       - cluster:
           name: demo-cluster-2
@@ -32,7 +32,6 @@ environments:
         podCIDR: "10.30.0.0/16"
 
 ---
-
 releases:
   - name: cilium
     chart: cilium/cilium
@@ -42,20 +41,40 @@ releases:
       - cluster:
           name: {{ .Values.cluster.name }}
           id: {{ .Values.cluster.id }}
-      
-      # --- Networking Strategy - AWS CNI ---
+
+      # --- Networking (AWS CNI Native Mode) ---
+      # AWS CNI
       - cni:
           chainingMode: aws-cni
           exclusive: false
+      
+      # IPAM
+      - ipam:
+          mode: kubernetes
+      - k8s:
+          requireIPv4PodCIDR: false
+      
+      # Native Routing (AWS VPC)
+      - routingMode: native
+      
+      # Masquerade
       - enableIPv4Masquerade: false
-      - routingMode: tunnel
-      - tunnelProtocol: vxlan
-      - endpointRoutes:
+      - ipv4:
           enabled: true
       
-      # --- vCluster Integration ---
-      - socketPath: /run/k3s/containerd/containerd.sock
+      # Service LoadBalancing
+      - kubeProxyReplacement: true
+      - socketLB:
+          enabled: true
       
+      # Interface Config
+      - devices: "ens+"
+      - extraConfig:
+          direct-routing-device: "ens5"
+
+      # --- Integration ---
+      - socketPath: /run/k3s/containerd/containerd.sock
+
       # --- Cluster Mesh ---
       - clustermesh:
           useAPIServer: true
@@ -63,14 +82,15 @@ releases:
             image: quay.io/cilium/clustermesh-apiserver
             tag: v1.18.4
           apiserver:
+            replicas: 1
             service:
               type: NodePort
               nodePort: {{ .Values.meshPort }}
       
-      # --- Service Types ---
-      - nodePort: 
-          enabled: true
-      - hostServices:
-          enabled: false
-      - externalIPs:
-          enabled: true
+      - nodePort: { enabled: true }
+      - hostServices: { enabled: false }
+      - externalIPs: { enabled: true }
+      
+      # --- Operator ---
+      - operator:
+          replicas: 1

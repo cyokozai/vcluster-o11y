@@ -1,0 +1,75 @@
+# Helmfile to install Cilium in MINIMAL configuration for vCluster
+# Purpose: Debug Cilium Agent startup issues by removing all advanced features
+repositories:
+  - name: cilium
+    url: https://helm.cilium.io/
+
+environments:
+  demo-cluster-0:
+    kubeContext: vcluster_demo-cluster-0_demo-cluster-0_{{ env "DEV_KUBE_CONTEXT" }}
+    values:
+      - cluster:
+          name: demo-cluster-0
+          id: 1
+
+  demo-cluster-1:
+    kubeContext: vcluster_demo-cluster-1_demo-cluster-1_{{ env "DEV_KUBE_CONTEXT" }}
+    values:
+      - cluster:
+          name: demo-cluster-1
+          id: 2
+
+  demo-cluster-2:
+    kubeContext: vcluster_demo-cluster-2_demo-cluster-2_{{ env "DEV_KUBE_CONTEXT" }}
+    values:
+      - cluster:
+          name: demo-cluster-2
+          id: 3
+
+---
+releases:
+  - name: cilium
+    chart: cilium/cilium
+    version: "1.18.4"
+    namespace: kube-system
+    values:
+      # --- Identity ---
+      - cluster:
+          name: {{ .Values.cluster.name }}
+          id: {{ .Values.cluster.id }}
+
+      # --- CNI Chaining (AWS CNI) ---
+      - cni:
+          chainingMode: aws-cni
+          exclusive: false
+
+      # --- IPAM: Use Kubernetes native (no Cilium IPAM) ---
+      - ipam:
+          mode: kubernetes
+      - k8s:
+          requireIPv4PodCIDR: false
+
+      # --- Disable ALL advanced features ---
+      - kubeProxyReplacement: false
+      - socketLB:
+          enabled: false
+      - hostServices:
+          enabled: false
+      - externalIPs:
+          enabled: false
+      - nodePort:
+          enabled: false
+      - bpf:
+          masquerade: false
+
+      # --- Disable ClusterMesh (will enable after Agent is stable) ---
+      - clustermesh:
+          useAPIServer: false
+
+      # --- Operator ---
+      - operator:
+          replicas: 1
+
+      # --- Debug: Enable verbose logging ---
+      - debug:
+          enabled: true
