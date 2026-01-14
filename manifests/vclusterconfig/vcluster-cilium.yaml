@@ -6,6 +6,14 @@ controlPlane:
         - "--flannel-backend=none"    # Cilium を入れるために無効化
         - "--disable-network-policy"  # Cilium Network Policy を使うため無効化
 
+# ホストのノードをvClusterに同期（DaemonSetのスケジューリングに必要）
+sync:
+  fromHost:
+    nodes:
+      enabled: true
+      selector:
+        all: true  # 全ノードを同期
+
 policies:
   networkPolicy:
     enabled: false # vCluster 自体の NetworkPolicy 制御を無効化
