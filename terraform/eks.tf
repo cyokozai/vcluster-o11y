@@ -10,11 +10,40 @@ module "eks" {
   cluster_enabled_log_types   = []
 
   eks_managed_node_groups = {
-    default = {
-      desired_size  = 2
-      max_size      = 3
-      min_size      = 1
-      instance_types = ["t3.medium"]
+    demo-0 = {
+      name = "node-group-demo-0"
+      desired_size = 2
+      min_size     = 1
+      max_size     = 3
+      instance_types = ["t3.large"]
+      
+      labels = {
+        "vcluster" = "demo-cluster-0"
+      }
+    }
+
+    demo-1 = {
+      name = "node-group-demo-1"
+      desired_size = 2
+      min_size     = 1
+      max_size     = 3
+      instance_types = ["t3.large"]
+      
+      labels = {
+        "vcluster" = "demo-cluster-1"
+      }
+    }
+
+    demo-2 = {
+      name = "node-group-demo-2"
+      desired_size = 1
+      min_size     = 1
+      max_size     = 2
+      instance_types = ["t3.large"]
+      
+      labels = {
+        "vcluster" = "demo-cluster-2"
+      }
     }
   }
 
@@ -76,7 +105,7 @@ data "aws_iam_policy_document" "ebs_csi_assume_role_policy" {
 }
 
 resource "aws_iam_role" "ebs_csi" {
-  name               = "AmazonEKS_EBS_CSI_DriverRole"
+  name               = "${var.cluster_name}-AmazonEKS_EBS_CSI_DriverRole"
   assume_role_policy = data.aws_iam_policy_document.ebs_csi_assume_role_policy.json
 }
 

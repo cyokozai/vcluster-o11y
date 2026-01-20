@@ -1,0 +1,90 @@
+# Google Microservices Demo (Online Boutique) Distributed Deployment
+
+helmDefaults:
+  wait: true
+  timeout: 600
+
+---
+
+environments:
+  demo-cluster-0: # Frontend / Entrypoint Cluster
+    kubeContext: vcluster_demo-cluster-0_demo-cluster-0_${EKSCONTEXT}
+  
+  demo-cluster-1: # Product & Data Cluster
+    kubeContext: vcluster_demo-cluster-1_demo-cluster-1_${EKSCONTEXT}
+  
+  demo-cluster-2: # Transaction & Backend Cluster
+    kubeContext: vcluster_demo-cluster-2_demo-cluster-2_${EKSCONTEXT}
+
+---
+
+releases:
+  - name: onlineboutique
+    chart: oci://us-docker.pkg.dev/online-boutique-ci/charts/onlineboutique
+    version: "0.10.4"
+    values:
+      - opentelemetryCollector:
+          create: false
+          addr: "alloy.monitoring.svc.cluster.local:4317"
+
+        # --- Cluster 0: Frontend Zone ---
+        frontend:
+          enabled: {{ eq .Environment.Name "demo-cluster-0" }}
+          service:
+            type: LoadBalancer
+
+        adservice:
+          enabled: {{ eq .Environment.Name "demo-cluster-0" }}
+          service:
+            annotations:
+              service.cilium.io/global: "true"
+
+        checkoutservice:
+          enabled: {{ eq .Environment.Name "demo-cluster-0" }}
+
+        # --- Cluster 1: Product Data Zone ---
+        productcatalogservice:
+          enabled: {{ eq .Environment.Name "demo-cluster-1" }}
+          service:
+            annotations:
+              service.cilium.io/global: "true"
+
+        cartservice:
+          enabled: {{ eq .Environment.Name "demo-cluster-1" }}
+          service:
+            annotations:
+              service.cilium.io/global: "true"
+
+        recommendationservice:
+          enabled: {{ eq .Environment.Name "demo-cluster-1" }}
+          service:
+            annotations:
+              service.cilium.io/global: "true"
+        
+        redis:
+          enabled: {{ eq .Environment.Name "demo-cluster-1" }}
+
+        # --- Cluster 2: Backend Processing Zone ---
+        paymentservice:
+          enabled: {{ eq .Environment.Name "demo-cluster-2" }}
+          service:
+            annotations:
+              service.cilium.io/global: "true"
+
+        shippingservice:
+          enabled: {{ eq .Environment.Name "demo-cluster-2" }}
+          service:
+            annotations:
+              service.cilium.io/global: "true"
+
+        currencyservice:
+          enabled: {{ eq .Environment.Name "demo-cluster-2" }}
+          service:
+            annotations:
+              service.cilium.io/global: "true"
+
+        emailservice:
+          enabled: {{ eq .Environment.Name "demo-cluster-2" }}
+          service:
+            annotations:
+              service.cilium.io/global: "true"
