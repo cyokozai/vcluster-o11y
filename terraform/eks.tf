@@ -9,44 +9,6 @@ module "eks" {
   create_cloudwatch_log_group = false
   cluster_enabled_log_types   = []
 
-  eks_managed_node_groups = {
-    demo-0 = {
-      name = "node-group-demo-0"
-      desired_size = 2
-      min_size     = 1
-      max_size     = 3
-      instance_types = ["t3.large"]
-      
-      labels = {
-        "vcluster" = "demo-cluster-0"
-      }
-    }
-
-    demo-1 = {
-      name = "node-group-demo-1"
-      desired_size = 2
-      min_size     = 1
-      max_size     = 3
-      instance_types = ["t3.large"]
-      
-      labels = {
-        "vcluster" = "demo-cluster-1"
-      }
-    }
-
-    demo-2 = {
-      name = "node-group-demo-2"
-      desired_size = 1
-      min_size     = 1
-      max_size     = 2
-      instance_types = ["t3.large"]
-      
-      labels = {
-        "vcluster" = "demo-cluster-2"
-      }
-    }
-  }
-
   access_entries = {
     self_admin = {
       principal_arn = var.eks_access_entry_principal_arn
@@ -59,6 +21,26 @@ module "eks" {
           }
         }
       }
+    }
+  }
+
+  node_security_group_additional_rules = {
+    ingress_self_all = {
+      description = "Node to node all ports/protocols"
+      protocol    = "-1"
+      from_port   = 0
+      to_port     = 0
+      type        = "ingress"
+      self        = true
+    }
+    
+    egress_all = {
+      description = "Node all egress"
+      protocol    = "-1"
+      from_port   = 0
+      to_port     = 0
+      type        = "egress"
+      cidr_blocks = ["0.0.0.0/0"]
     }
   }
 

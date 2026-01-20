@@ -146,13 +146,14 @@ releases:
                 url = "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
               }
             }
-
+  
   - name: kube-prometheus-stack
     namespace: monitoring
     chart: prometheus-community/kube-prometheus-stack
     version: "80.2.0"
     createNamespace: true
     values:
+    # Grafana 設定
     - grafana:
         additionalDataSources:
           - name: Tempo
@@ -165,69 +166,87 @@ releases:
                 datasourceUid: 'prometheus'
               nodeGraph:
                 enabled: true
+        serviceMonitor:
+          enabled: true
+          interval: 30s
+          scrapeTimeout: 20s
+        
+    # Prometheus Operator 設定
     - prometheusOperator:
+        enabled: true
         admissionWebhooks:
           enabled: false
         tls:
           enabled: false
-      prometheusSpec:
-        scrapeInterval: "15s"
-        evaluationInterval: "15s"
-        enableFeatures:
-          - remote-write-receiver
-        serviceMonitorSelectorNilUsesHelmValues: false
-        serviceMonitorSelector: {}
-        serviceMonitorNamespaceSelector: {}
-      additionalScrapeConfigs:
-      - job_name: 'prometheus'
-        static_configs:
-        - targets: ['localhost:9090']
-      - job_name: kube-etcd
-        kubernetes_sd_configs:
-          - role: node
-        scheme: https
-        tls_config:
-          ca_file:   /etc/prometheus/secrets/etcd-client-cert/etcd-ca
-          cert_file: /etc/prometheus/secrets/etcd-client-cert/etcd-client
-          key_file:  /etc/prometheus/secrets/etcd-client-cert/etcd-client-key
-        relabel_configs:
-        - action: labelmap
-          regex: __meta_kubernetes_node_label_(.+)
-        - source_labels: [__address__]
-          action: replace
-          target_label: __address__
-          regex: ([^:;]+):(\d+)
-          replacement: ${1}:2379
-        - source_labels: [__meta_kubernetes_node_name]
-          action: keep
-          regex: .*mst.*
-        - source_labels: [__meta_kubernetes_node_name]
-          action: replace
-          target_label: node
-          regex: (.*)
-          replacement: ${1}
-        metric_relabel_configs:
-        - regex: (kubernetes_io_hostname|failure_domain_beta_kubernetes_io_region|beta_kubernetes_io_os|beta_kubernetes_io_arch|beta_kubernetes_io_instance_type|failure_domain_beta_kubernetes_io_zone)
-          action: labeldrop
-      - job_name: 'kubernetes-pods'
-        kubernetes_sd_configs:
-          - role: pod
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
-            action: keep
-            regex: true
-          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-            action: replace
-            target_label: __metrics_path__
-            regex: (.+)
-          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
-            action: replace
-            regex: ([^:]+)(?::\d+)?;(\d+)
-            replacement: $1:$2
-            target_label: __address__
-          - source_labels: [__meta_kubernetes_namespace]
-            action: replace
-            target_label: namespace
-          - source_labels: [__meta_kubernetes_pod_label_app]
-            action: replace
-            target_label: job
+        rbac:
+          create: true
+        serviceAccount:
+          create: true
+          name: kube-prometheus-stack-operator
+        hostNetwork: true
+        dnsPolicy: ClusterFirstWithHostNet
+    
+    # Prometheus 本体の設定
+    - prometheus:
+        enabled: true
+        prometheusSpec:
+          scrapeInterval: "15s"
+          evaluationInterval: "15s"
+          enableFeatures:
+            - remote-write-receiver
+          serviceMonitorSelectorNilUsesHelmValues: false
+          serviceMonitorSelector: {}
+          serviceMonitorNamespaceSelector: {}
+          additionalScrapeConfigs:
+          - job_name: 'prometheus'
+            static_configs:
+            - targets: ['localhost:9090']
+          - job_name: kube-etcd
+            kubernetes_sd_configs:
+              - role: node
+            scheme: https
+            tls_config:
+              ca_file:   /etc/prometheus/secrets/etcd-client-cert/etcd-ca
+              cert_file: /etc/prometheus/secrets/etcd-client-cert/etcd-client
+              key_file:  /etc/prometheus/secrets/etcd-client-cert/etcd-client-key
+            relabel_configs:
+            - action: labelmap
+              regex: __meta_kubernetes_node_label_(.+)
+            - source_labels: [__address__]
+              action: replace
+              target_label: __address__
+              regex: ([^:;]+):(\d+)
+              replacement: ${1}:2379
+            - source_labels: [__meta_kubernetes_node_name]
+              action: keep
+              regex: .*mst.*
+            - source_labels: [__meta_kubernetes_node_name]
+              action: replace
+              target_label: node
+              regex: (.*)
+              replacement: ${1}
+            metric_relabel_configs:
+            - regex: (kubernetes_io_hostname|failure_domain_beta_kubernetes_io_region|beta_kubernetes_io_os|beta_kubernetes_io_arch|beta_kubernetes_io_instance_type|failure_domain_beta_kubernetes_io_zone)
+              action: labeldrop
+          - job_name: 'kubernetes-pods'
+            kubernetes_sd_configs:
+              - role: pod
+            relabel_configs:
+              - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                action: keep
+                regex: true
+              - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+                action: replace
+                target_label: __metrics_path__
+                regex: (.+)
+              - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+                action: replace
+                regex: ([^:]+)(?::\d+)?;(\d+)
+                replacement: $1:$2
+                target_label: __address__
+              - source_labels: [__meta_kubernetes_namespace]
+                action: replace
+                target_label: namespace
+              - source_labels: [__meta_kubernetes_pod_label_app]
+                action: replace
+                target_label: job

@@ -28,16 +28,10 @@
 
 ## Install
 
-- move `helm` directory
-
-  ```bash
-  cd helm
-  ```
-
 - Set repositories
 
   ```bash
-  helmfile repos -f helmfile.yaml
+  helmfile repos -f helm/helmfile.yaml
   ```
 
 - Update the repositories
@@ -49,13 +43,13 @@
 - Sync up custom resources to the host cluster
 
   ```bash
-  helmfile sync -f helmfile.yaml
+  helmfile sync -f helm/helmfile.yaml
   ```
 
 - Apply custom resources to the host cluster
 
   ```bash
-  helmfile apply -f helmfile.yaml
+  helmfile apply -f helm/helmfile.yaml
   ```
 
 ## Usage
@@ -85,5 +79,5 @@
 - Clean up
 
   ```bash
-  helmfile destroy
+  helmfile destroy -f helm/helmfile.yaml
   ```

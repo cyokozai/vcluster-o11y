@@ -11,7 +11,9 @@
 1. vCluster コマンドで仮想クラスタを作成
 
     ```bash
-    vcluster create demo-cluster --namespace demo-cluster
+    vcluster create chaos-test \
+        --namespace vcluster-chaos-test \
+        --values manifests/vcluster/vcluster-chaos-test.yaml
     ```
 
 1. クラスタが作成されると kubectl のクレデンシャルが自動で仮想クラスタ `demo-cluster` に切り替わる

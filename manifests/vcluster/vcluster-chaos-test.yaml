@@ -1,0 +1,126 @@
+# vcluster-chaos-test.yaml
+# Purpose: Chaos engineering testing with krkn
+
+controlPlane:
+  distro:
+    k3s:
+      enabled: true
+      image:
+        tag: v1.31.4-k3s1
+  
+  service:
+    enabled: true
+    spec:
+      type: ClusterIP
+
+  coredns:
+    # CoreDNS
+    enabled: true
+    deployment:
+      replicas: 1
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "128Mi"
+        requests:
+          cpu: "10m"
+          memory: "64Mi"
+  
+  backingStore:
+    etcd:
+      embedded:
+        enabled: true
+      deploy:
+        enabled: false
+  
+  statefulSet:
+    # vCluster コントロールプレーンの永続化
+    persistence:
+      volumeClaim:
+        enabled: true
+        size: 10Gi
+        storageClass: gp3
+    # リソース制限
+    resources:
+      limits:
+        cpu: "2"
+        memory: "4Gi"
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+    pods:
+      annotations: {
+        "prometheus.io/scrape": "true",
+        "prometheus.io/port": "8443",
+        "prometheus.io/path": "/metrics"
+      }
+
+# リソース同期
+sync:
+  # ホストから仮想クラスタへのリソース同期
+  fromHost:
+    nodes:
+      enabled: true
+      selector:
+        all: true
+    
+    storageClasses:
+      enabled: true
+    
+    ingressClasses:
+      enabled: false
+    
+    # CSI ドライバー
+    csiDrivers:
+      enabled: true
+    csiNodes:
+      enabled: true
+    csiStorageCapacities:
+      enabled: true
+
+  # 仮想クラスタからホストへのリソース同期
+  toHost:
+    services:
+      enabled: true
+    
+    ingresses:
+      enabled: false
+    
+    persistentVolumeClaims:
+      enabled: true
+
+# セキュリティとネットワークポリシー
+policies:
+  networkPolicy:
+    enabled: false
+  
+  podSecurityStandard: baseline
+  
+  # vCluster 全体のリソース上限
+  resourceQuota:
+    enabled: true
+    quota:
+      requests.cpu: "4"
+      requests.memory: "16Gi"
+      limits.cpu: "8"
+      limits.memory: "32Gi"
+      count/pods: "100"
+      persistentvolumeclaims: "10"
+  
+  limitRange:
+    enabled: true
+    default:
+      cpu: "500m"
+      memory: "512Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"
+
+# メトリクス
+integrations:
+  metricsServer:
+    enabled: false
+
+# テレメトリ
+telemetry:
+  enabled: false
