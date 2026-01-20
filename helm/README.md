@@ -16,14 +16,14 @@
     - [GitHub](https://github.com/grafana/loki)
     - [Artifact Hub](https://artifacthub.io/packages/helm/grafana/loki)
   - Grafana/Tempo
-    - [GtiHub](https://github.com/grafana/tempo)
+    - [GitHub](https://github.com/grafana/tempo)
     - [Artifact Hub](https://artifacthub.io/packages/helm/grafana/tempo)
   - Cilium
     - [GitHub](https://github.com/cilium/cilium)
     - [Artifact Hub](https://artifacthub.io/packages/helm/cilium/cilium)
 - Demo application
   - Google Microservices Demo
-    - [GiHub](https://github.com/GoogleCloudPlatform/microservices-demo)
+    - [GitHub](https://github.com/GoogleCloudPlatform/microservices-demo)
     - [Google Cloud Docs](https://docs.cloud.google.com/service-mesh/docs/onlineboutique-install-kpt?hl=ja)
 
 ## Install

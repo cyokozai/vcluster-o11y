@@ -50,7 +50,7 @@ spec:
         - name: nginx-exporter
           image: "nginx/nginx-prometheus-exporter:1.5.1"
           args:
-            - -nginx.scrape-uri=http://localhost:80/metrics
+            # - -nginx.scrape-uri=http://localhost:80/metrics
             - -nginx.scrape-uri=http://localhost:80/stub_status
           ports:
             - containerPort: 9113
@@ -66,6 +66,8 @@ spec:
         - name: nginx-storage
           persistentVolumeClaim:
             claimName: nginx
+        - name: nginx-logs
+          emptyDir: {}
         - name: nginx-conf
           configMap:
             name: nginx-conf

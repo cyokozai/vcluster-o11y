@@ -170,10 +170,6 @@ releases:
           enabled: false
         tls:
           enabled: false
-      persistentVolumes:
-        enabled: true
-      persistentVolumeClaims:
-        enabled: true
       prometheusSpec:
         scrapeInterval: "15s"
         evaluationInterval: "15s"

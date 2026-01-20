@@ -8,13 +8,13 @@ helmDefaults:
 
 environments:
   demo-cluster-0: # Frontend / Entrypoint Cluster
-    kubeContext: vcluster_demo-cluster-0_demo-cluster-0_${EKSCONTEXT}
+    kubeContext: vcluster_demo-cluster-0_demo-cluster-0_${DEV_KUBE_CONTEXT}
   
   demo-cluster-1: # Product & Data Cluster
-    kubeContext: vcluster_demo-cluster-1_demo-cluster-1_${EKSCONTEXT}
+    kubeContext: vcluster_demo-cluster-1_demo-cluster-1_${DEV_KUBE_CONTEXT}
   
   demo-cluster-2: # Transaction & Backend Cluster
-    kubeContext: vcluster_demo-cluster-2_demo-cluster-2_${EKSCONTEXT}
+    kubeContext: vcluster_demo-cluster-2_demo-cluster-2_${DEV_KUBE_CONTEXT}
 
 ---
 

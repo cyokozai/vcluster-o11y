@@ -9,7 +9,7 @@
 - IAM ユーザまたは IAM ロールの ARN を取得する
 
   ```shell
-  aws sts get-caller-identity. 
+  aws sts get-caller-identity
   ```
 
 - `terraform` ディレクトリへ移動し、 `terraform.tfvars` を作成し、先ほど取得した ARN を指定する
@@ -38,7 +38,8 @@
   ```bash
   export REGION="ap-northeast-1" &&\
   export CLUSTER_NAME="demo-eks-vcluster" &&\
-  echo "$REGION\n$CLUSTER_NAME"
+  echo "$REGION" &&\
+  echo "$CLUSTER_NAME"
   ```
 
 - クレデンシャルを取得
