@@ -39,15 +39,20 @@ releases:
           id: {{ .Values.cluster.id }}
 
       # --- CNI Chaining (AWS CNI) ---
+      # IMPORTANT: Do not install CNI config on host (vCluster environment)
       - cni:
           chainingMode: aws-cni
           exclusive: false
+          install: false  # Prevent writing to host /etc/cni/net.d/
 
-      # --- IPAM: Use Kubernetes native (no Cilium IPAM) ---
+      # --- IPAM: Cluster Pool mode for AWS CNI chaining ---
+      # AWS CNI handles actual IP allocation, Cilium uses cluster-pool for internal tracking
       - ipam:
-          mode: kubernetes
-      - k8s:
-          requireIPv4PodCIDR: false
+          mode: cluster-pool
+          operator:
+            clusterPoolIPv4PodCIDRList:
+              - "10.0.0.0/16"  # Match AWS VPC CIDR
+            clusterPoolIPv4MaskSize: 24
 
       # --- Disable ALL advanced features ---
       - kubeProxyReplacement: false

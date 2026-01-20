@@ -106,16 +106,28 @@ releases:
         configMap:
           create: true
           content: |
-            // Receiver for OTLP (both gRPC and HTTP)
+            // OTLP Receiver (gRPC and HTTP)
             otelcol.receiver.otlp "default" {
-              grpc { endpoint = "0.0.0.0:4317" }
-              http { endpoint = "0.0.0.0:4318" }
+              grpc {
+                endpoint = "0.0.0.0:4317"
+              }
+              http {
+                endpoint = "0.0.0.0:4318"
+              }
               output {
-                metrics = [prometheus.remote_write.default.receiver]
+                metrics = [otelcol.processor.batch.default.input]
+                traces  = [otelcol.processor.batch.default.input]
+              }
+            }
+            
+            // Batch Processor (optional but recommended)
+            otelcol.processor.batch "default" {
+              output {
+                metrics = [otelcol.exporter.prometheus.default.input]
                 traces  = [otelcol.exporter.otlp.tempo.input]
               }
             }
-            // Exporter to Tempo (Trace)
+            // Exporter: OTLP to Tempo (Traces)
             otelcol.exporter.otlp "tempo" {
               client {
                 endpoint = "tempo.monitoring.svc.cluster.local:4317"
@@ -124,7 +136,11 @@ releases:
                 }
               }
             }
-            // Exporter to Prometheus Remote Write (Metric)
+            // Exporter: Prometheus Remote Write (Metrics)
+            otelcol.exporter.prometheus "default" {
+              forward_to = [prometheus.remote_write.default.receiver]
+            }
+            
             prometheus.remote_write "default" {
               endpoint {
                 url = "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"

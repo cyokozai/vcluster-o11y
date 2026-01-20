@@ -42,38 +42,29 @@ releases:
           name: {{ .Values.cluster.name }}
           id: {{ .Values.cluster.id }}
 
-      # --- Networking (AWS CNI Native Mode) ---
-      # AWS CNI
+      # --- CNI Chaining (AWS CNI) ---
+      # IMPORTANT: Do not install CNI config on host (vCluster environment)
       - cni:
           chainingMode: aws-cni
           exclusive: false
-      
-      # IPAM
-      - ipam:
-          mode: kubernetes
-      - k8s:
-          requireIPv4PodCIDR: false
-      
-      # Native Routing (AWS VPC)
-      - routingMode: native
-      
-      # Masquerade
-      - enableIPv4Masquerade: false
-      - ipv4:
-          enabled: true
-      
-      # Service LoadBalancing
-      - kubeProxyReplacement: true
-      - socketLB:
-          enabled: true
-      
-      # Interface Config
-      - devices: "ens+"
-      - extraConfig:
-          direct-routing-device: "ens5"
+          install: false  # Prevent writing to host /etc/cni/net.d/
 
-      # --- Integration ---
-      - socketPath: /run/k3s/containerd/containerd.sock
+      # --- IPAM: Cluster Pool mode for AWS CNI chaining ---
+      - ipam:
+          mode: cluster-pool
+          operator:
+            clusterPoolIPv4PodCIDRList:
+              - "10.0.0.0/16"
+            clusterPoolIPv4MaskSize: 24
+
+      # --- Disable advanced features (minimal for vCluster) ---
+      - kubeProxyReplacement: false
+      - socketLB:
+          enabled: false
+      - hostServices:
+          enabled: false
+      - bpf:
+          masquerade: false
 
       # --- Cluster Mesh ---
       - clustermesh:
@@ -87,10 +78,9 @@ releases:
               type: NodePort
               nodePort: {{ .Values.meshPort }}
       
-      - nodePort: { enabled: true }
-      - hostServices: { enabled: false }
-      - externalIPs: { enabled: true }
-      
+      - nodePort: { enabled: false }
+      - externalIPs: { enabled: false }
+
       # --- Operator ---
       - operator:
-          replicas: 1
+          replicas: 1 

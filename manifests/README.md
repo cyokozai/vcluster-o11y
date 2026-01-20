@@ -26,34 +26,34 @@
 
     - `demo-cluster-0`
 
-      ```bash
-      vcluster create demo-cluster-0 --namespace demo-cluster-0 \
-        --values vclusterconfig/vcluster-cilium.yaml \
-        --set sync.fromHost.nodes.selector.labels.vcluster=demo-cluster-0 \
-        --set controlPlane.statefulSet.scheduling.nodeSelector.vcluster=demo-cluster-0
-      vcluster disconnect
-      ```
+        ```bash
+        vcluster create demo-cluster-0 --namespace demo-cluster-0 \
+            --values vclusterconfig/vcluster-cilium.yaml \
+            --set sync.fromHost.nodes.selector.labels.vcluster=demo-cluster-0 \
+            --set controlPlane.statefulSet.scheduling.nodeSelector.vcluster=demo-cluster-0
+        vcluster disconnect
+        ```
 
     - `demo-cluster-1`
 
-      ```bash
-      vcluster create demo-cluster-1 --namespace demo-cluster-1 \
-        --values vclusterconfig/vcluster-cilium.yaml \
-        --set sync.fromHost.nodes.selector.labels.vcluster=demo-cluster-1 \
-        --set controlPlane.statefulSet.scheduling.nodeSelector.vcluster=demo-cluster-1
-      vcluster disconnect
-      ```
+        ```bash
+        vcluster create demo-cluster-1 --namespace demo-cluster-1 \
+            --values vclusterconfig/vcluster-cilium.yaml \
+            --set sync.fromHost.nodes.selector.labels.vcluster=demo-cluster-1 \
+            --set controlPlane.statefulSet.scheduling.nodeSelector.vcluster=demo-cluster-1
+        vcluster disconnect
+        ```
 
     - `demo-cluster-2`
 
-      ```bash
-      vcluster create demo-cluster-2 --namespace demo-cluster-2 \
-        --values vclusterconfig/vcluster-cilium.yaml \
-        --set sync.fromHost.nodes.selector.labels.vcluster=demo-cluster-2 \
-        --set controlPlane.statefulSet.scheduling.nodeSelector.vcluster=demo-cluster-2
-      vcluster disconnect
-      ```
-  
+        ```bash
+        vcluster create demo-cluster-2 --namespace demo-cluster-2 \
+            --values vclusterconfig/vcluster-cilium.yaml \
+            --set sync.fromHost.nodes.selector.labels.vcluster=demo-cluster-2 \
+            --set controlPlane.statefulSet.scheduling.nodeSelector.vcluster=demo-cluster-2
+        vcluster disconnect
+        ```
+
     ```mermaid
     graph LR
         subgraph Local Mac
