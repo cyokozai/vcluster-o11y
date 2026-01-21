@@ -1,6 +1,3 @@
-# vcluster-chaos-test.yaml
-# Purpose: Chaos engineering testing with krkn
-
 controlPlane:
   distro:
     k3s:
@@ -12,24 +9,9 @@ controlPlane:
     enabled: true
     spec:
       type: ClusterIP
-
-  coredns:
-    # CoreDNS
-    enabled: true
-    deployment:
-      replicas: 1
-      resources:
-        limits:
-          cpu: "100m"
-          memory: "128Mi"
-        requests:
-          cpu: "10m"
-          memory: "64Mi"
   
   backingStore:
     etcd:
-      embedded:
-        enabled: true
       deploy:
         enabled: false
   
@@ -55,29 +37,7 @@ controlPlane:
         "prometheus.io/path": "/metrics"
       }
 
-# リソース同期
 sync:
-  # ホストから仮想クラスタへのリソース同期
-  fromHost:
-    nodes:
-      enabled: true
-      selector:
-        all: true
-    
-    storageClasses:
-      enabled: true
-    
-    ingressClasses:
-      enabled: false
-    
-    # CSI ドライバー
-    csiDrivers:
-      enabled: true
-    csiNodes:
-      enabled: true
-    csiStorageCapacities:
-      enabled: true
-
   # 仮想クラスタからホストへのリソース同期
   toHost:
     services:
@@ -87,6 +47,27 @@ sync:
       enabled: false
     
     persistentVolumeClaims:
+      enabled: true
+
+  # ホストから仮想クラスタへのリソース同期
+  fromHost:
+    nodes:
+      enabled: true
+      selector:
+        all: true
+    
+    ingressClasses:
+      enabled: false
+      
+    storageClasses:
+      enabled: true
+    
+    # CSI ドライバー
+    csiDrivers:
+      enabled: true
+    csiNodes:
+      enabled: true
+    csiStorageCapacities:
       enabled: true
 
 # セキュリティとネットワークポリシー
