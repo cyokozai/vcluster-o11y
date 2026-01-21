@@ -47,6 +47,18 @@ module "eks" {
   cluster_endpoint_public_access  = true
   cluster_endpoint_private_access = true
 
+  eks_managed_node_groups = {
+    default = {
+      name           = "${var.cluster_name}-ng"
+      instance_types = ["t3.medium"]
+      min_size       = 1
+      max_size       = 3
+      desired_size   = 2
+
+      subnet_ids = module.vpc.private_subnets
+    }
+  }
+
   tags = var.common_tags
 }
 
@@ -102,6 +114,7 @@ resource "aws_eks_addon" "ebs_csi" {
   addon_version            = var.ebs_csi_version
   service_account_role_arn = aws_iam_role.ebs_csi.arn
   depends_on = [
-    aws_iam_role_policy_attachment.ebs_csi
+    aws_iam_role_policy_attachment.ebs_csi,
+    module.eks.eks_managed_node_groups
   ]
 }
