@@ -26,7 +26,7 @@ controlPlane:
     resources:
       limits:
         cpu: "2"
-        memory: "4Gi"
+        memory: "8Gi"
       requests:
         cpu: "500m"
         memory: "1Gi"
@@ -86,6 +86,7 @@ policies:
       limits.cpu: "8"
       limits.memory: "32Gi"
       count/pods: "100"
+      count/services: "50"
       persistentvolumeclaims: "10"
   
   limitRange:
