@@ -15,7 +15,7 @@
 - `terraform` ディレクトリへ移動し、 `terraform.tfvars` を作成し、先ほど取得した ARN を指定する
 
   ```hcl
-  eks_access_entry_principal_arn = "arn:aws:iam::hogehoge"
+  eks_access_entry_principal_arn = "arn:aws:iam::hogehoge" > terraform.tfvars
   ```
 
 - 初期化を行う
