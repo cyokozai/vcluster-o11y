@@ -64,7 +64,7 @@
         end
 
         subgraph Internet
-            B == 3. 安全なトンネル (Kubernetes API経由) ==> C[AWS EKS Cluster]
+            B == 3. Kubernetes API ==> C[AWS EKS Cluster]
         end
 
         subgraph AWS EKS Node
