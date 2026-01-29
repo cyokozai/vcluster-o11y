@@ -9,7 +9,7 @@ controlPlane:
     enabled: true
     spec:
       type: ClusterIP
-  
+
   backingStore:
     etcd:
       deploy:
@@ -83,7 +83,7 @@ policies:
     quota:
       requests.cpu: "4"
       requests.memory: "16Gi"
-      limits.cpu: "32"
+      limits.cpu: "64"
       limits.memory: "32Gi"
       count/pods: "50"
       count/services: "30"
