@@ -51,9 +51,13 @@ module "eks" {
     default = {
       name           = "${var.cluster_name}-ng"
       instance_types = ["t3.large"]
-      min_size       = 1
-      max_size       = 3
-      desired_size   = 2
+
+      min_size     = 1
+      max_size     = 3
+      desired_size = 2
+
+      use_custom_launch_template = false
+      disk_size                  = 50
 
       subnet_ids = module.vpc.private_subnets
     }
