@@ -83,10 +83,10 @@ policies:
     quota:
       requests.cpu: "4"
       requests.memory: "16Gi"
-      limits.cpu: "12"
+      limits.cpu: "32"
       limits.memory: "32Gi"
-      count/pods: "100"
-      count/services: "50"
+      count/pods: "50"
+      count/services: "30"
       persistentvolumeclaims: "10"
   
   limitRange:
