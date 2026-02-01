@@ -83,7 +83,7 @@ releases:
   - name: tempo
     namespace: monitoring
     chart: grafana/tempo
-    version: "1.24.1"
+    version: "1.24.3"
     values:
     - persistence:
         enabled: true
@@ -159,7 +159,7 @@ releases:
           - name: Tempo
             type: tempo
             uid: tempo
-            url: http://tempo.monitoring.svc.cluster.local:3100
+            url: http://tempo.monitoring:3200
             access: proxy
             jsonData:
               tracesToLogs:

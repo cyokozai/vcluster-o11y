@@ -147,7 +147,16 @@ releases:
                 ephemeral-storage: "50Mi"
 
           kafka:
-            enabled: false
+            enabled: true
+            resources:
+              limits:
+                cpu: 2000m
+                memory: 1Gi
+                ephemeral-storage: "1Gi"
+              requests:
+                cpu: 100m
+                memory: 500Mi
+                ephemeral-storage: "100Mi"
 
           load-generator:
             resources:
