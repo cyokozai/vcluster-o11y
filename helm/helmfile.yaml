@@ -79,6 +79,11 @@ releases:
           enabled: false
           nodes: true
           pods: true
+      networking:
+        replicateServices:
+          fromHost:
+            - from: monitoring/alloy
+              to: otel-demo/otelcol-to-alloy
 
   - name: tempo
     namespace: monitoring
