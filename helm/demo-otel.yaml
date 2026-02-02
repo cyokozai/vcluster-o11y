@@ -41,7 +41,7 @@ releases:
               spanmetrics: {}
             exporters:
               otlp:
-                endpoint: "alloy.monitoring.svc.cluster.local:4317"
+                endpoint: "otelcol-to-alloy:4317"
                 tls:
                   insecure: true
             service:
@@ -181,6 +181,21 @@ releases:
                 ephemeral-storage: "50Mi"
 
           product-catalog:
+            env:
+              - name: GOMEMLIMIT
+                value: "64MiB"
+              - name: PRODUCT_CATALOG_PORT
+                value: "8080"
+              - name: FLAGD_HOST
+                value: "flagd"
+              - name: FLAGD_PORT
+                value: "8013"
+              - name: DB_CONNECTION_STRING
+                value: "postgres://otelu:otelp@postgresql/otel?sslmode=disable"
+              - name: OTEL_EXPORTER_OTLP_ENDPOINT
+                value: "http://$(OTEL_COLLECTOR_NAME):4317"
+              - name: OTEL_SEMCONV_STABILITY_OPT_IN
+                value: "database"
             resources:
               limits:
                 cpu: 2000m
