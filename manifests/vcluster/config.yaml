@@ -70,6 +70,13 @@ sync:
     csiStorageCapacities:
       enabled: true
 
+# ネットワーク設定
+networking:
+  replicateServices:
+    fromHost:
+      - from: monitoring/alloy
+        to: otel-demo/otelcol-to-alloy
+
 # セキュリティとネットワークポリシー
 policies:
   networkPolicy:
