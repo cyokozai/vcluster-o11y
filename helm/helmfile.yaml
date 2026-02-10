@@ -108,6 +108,15 @@ releases:
     version: "0.5.0"
     values:
     - alloy:
+        extraPorts:
+          - name: otlp-grpc
+            port: 4317
+            targetPort: 4317
+            protocol: TCP
+          - name: otlp-http
+            port: 4318
+            targetPort: 4318
+            protocol: TCP
         configMap:
           create: true
           content: |
