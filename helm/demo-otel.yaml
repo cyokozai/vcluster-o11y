@@ -283,6 +283,17 @@ releases:
                 memory: 64Mi
                 ephemeral-storage: "50Mi"
 
+          valkey-cart:
+            resources:
+              limits:
+                cpu: 500m
+                memory: 64Mi
+                ephemeral-storage: "500Mi"
+              requests:
+                cpu: 50m
+                memory: 20Mi
+                ephemeral-storage: "50Mi"
+
           postgresql:
             resources:
               limits:
