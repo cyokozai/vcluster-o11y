@@ -346,6 +346,58 @@ kubelet_volume_stats_capacity_bytes{namespace="monitoring"}
 
 ---
 
+### Alert 7: vClusterQuotaExhaustion
+
+vCluster の ResourceQuota 使用率が 80% を超えた場合に発火する。
+
+| 設定項目 | 値 |
+|---|---|
+| Rule name | `vClusterQuotaExhaustion` |
+| Folder | `OTEL Demo Alerts` |
+| Group | `infrastructure` |
+| Evaluation interval | `5m` |
+| Pending period | `10m` |
+| Severity label | `warning` |
+
+**Query A (Quota used):**
+```promql
+kube_resourcequota{namespace="vcluster-otel-demo", type="used"}
+```
+
+**Query B (Quota hard):**
+```promql
+kube_resourcequota{namespace="vcluster-otel-demo", type="hard"}
+```
+
+**Expression C (Usage ratio = A / B):**
+| 設定 | 値 |
+|---|---|
+| Operation | Math |
+| Expression | `$A / $B` |
+
+**Expression D (Threshold):**
+| 設定 | 値 |
+|---|---|
+| Operation | Threshold |
+| Input | C |
+| IS ABOVE | `0.8` |
+
+**Alert condition**: D
+
+**Annotations:**
+| Key | Value |
+|---|---|
+| summary | `vCluster の ResourceQuota 使用率が 80% を超過` |
+| description | `vCluster (vcluster-otel-demo) の ResourceQuota {{ $labels.resource }} の使用率が 80% を超えています。現在値: {{ $values.C }}` |
+
+**Labels:**
+| Key | Value |
+|---|---|
+| severity | `warning` |
+| team | `platform` |
+
+---
+
 ## 4. アラートルール一覧 (設定後の確認用)
 
 | # | ルール名 | グループ | 条件 | Pending | 重要度 |
@@ -356,6 +408,7 @@ kubelet_volume_stats_capacity_bytes{namespace="monitoring"}
 | 4 | PodOOMKillRisk | infrastructure | Memory > 90% limit | 5m | warning |
 | 5 | TelemetryPipelineDrop | pipeline | Failed exports > 0 | 3m | warning |
 | 6 | StorageNearFull | infrastructure | PVC > 85% | 10m | warning |
+| 7 | vClusterQuotaExhaustion | infrastructure | ResourceQuota > 80% | 10m | warning |
 
 ---
 
@@ -363,6 +416,6 @@ kubelet_volume_stats_capacity_bytes{namespace="monitoring"}
 
 アラートルール設定後、以下を確認する:
 
-1. **Alerting > Alert rules** で全 6 ルールが `Normal` 状態で表示されること
+1. **Alerting > Alert rules** で全 7 ルールが `Normal` 状態で表示されること
 2. 現在 `valkey-cart` が Pending 状態のため、一部アラート (HighErrorRate, HighLatencyP99) が既に `Firing` になる可能性がある
 3. Step 4 で Feature Flag による障害注入を行い、アラートが正しく発火することを検証する
