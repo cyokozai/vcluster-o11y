@@ -1,0 +1,77 @@
+name: Validate
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  helmfile-template:
+    name: Helmfile Template
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mamezou-tech/setup-helmfile@v2.2.0
+        with:
+          helmfile-version: "v0.169.2"
+
+      - name: Add Helm repositories
+        run: helmfile -f helm/helmfile.yaml repos
+
+      - name: Render templates
+        run: helmfile -f helm/helmfile.yaml template > /tmp/helmfile-rendered.yaml
+
+      - name: Upload rendered manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: helmfile-rendered
+          path: /tmp/helmfile-rendered.yaml
+          retention-days: 1
+
+  kubeconform-manifests:
+    name: Kubeconform (manifests/)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz \
+            | tar xz -C /usr/local/bin
+
+      - name: Validate manifests
+        run: |
+          kubeconform \
+            -strict \
+            -summary \
+            -output json \
+            -kubernetes-version 1.31.0 \
+            -ignore-filename-pattern 'vcluster/.*' \
+            manifests/
+
+  kubeconform-helm:
+    name: Kubeconform (helm rendered)
+    needs: helmfile-template
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download rendered manifests
+        uses: actions/download-artifact@v4
+        with:
+          name: helmfile-rendered
+
+      - name: Install kubeconform
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz \
+            | tar xz -C /usr/local/bin
+
+      - name: Validate rendered Helm templates
+        run: |
+          kubeconform \
+            -strict \
+            -summary \
+            -output json \
+            -kubernetes-version 1.31.0 \
+            -ignore-missing-schemas \
+            helmfile-rendered.yaml

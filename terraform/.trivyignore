@@ -1,0 +1,6 @@
+# Dev/test EKS cluster: public endpoint access is intentional
+AVD-AWS-0040
+AVD-AWS-0041
+
+# EKS nodes require unrestricted egress for pulling images and accessing AWS APIs
+AVD-AWS-0104

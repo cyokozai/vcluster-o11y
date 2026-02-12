@@ -22,11 +22,6 @@
   )
   ```
 
-- CPU 
-
-  <!-- ```PromQL -->
-  
-
 ### Memory
 
 - Requests
