@@ -4,7 +4,7 @@ controlPlane:
       enabled: true
       image:
         tag: v1.31.4-k3s1
-  
+
   service:
     enabled: true
     spec:
@@ -14,7 +14,7 @@ controlPlane:
     etcd:
       deploy:
         enabled: false
-  
+
   statefulSet:
     # vCluster コントロールプレーンの永続化
     persistence:
@@ -42,10 +42,10 @@ sync:
   toHost:
     services:
       enabled: true
-    
+
     ingresses:
       enabled: false
-    
+
     persistentVolumeClaims:
       enabled: true
 
@@ -55,13 +55,13 @@ sync:
       enabled: true
       selector:
         all: true
-    
+
     ingressClasses:
       enabled: false
-      
+
     storageClasses:
       enabled: true
-    
+
     # CSI ドライバー
     csiDrivers:
       enabled: true
@@ -81,9 +81,9 @@ networking:
 policies:
   networkPolicy:
     enabled: false
-  
+
   podSecurityStandard: baseline
-  
+
   # vCluster 全体のリソース上限
   resourceQuota:
     enabled: true
@@ -95,7 +95,7 @@ policies:
       count/pods: "50"
       count/services: "30"
       persistentvolumeclaims: "10"
-  
+
   limitRange:
     enabled: true
     default:
