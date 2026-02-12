@@ -22,6 +22,7 @@ jobs:
           scan-ref: terraform/
           exit-code: "1"
           severity: HIGH,CRITICAL
+          trivyignores: terraform/.trivyignore
 
   trivy-manifests:
     name: Trivy (Kubernetes Manifests)

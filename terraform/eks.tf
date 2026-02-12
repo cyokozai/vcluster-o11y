@@ -33,7 +33,7 @@ module "eks" {
       type        = "ingress"
       self        = true
     }
-    
+
     egress_all = {
       description = "Node all egress"
       protocol    = "-1"

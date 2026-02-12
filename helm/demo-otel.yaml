@@ -25,7 +25,7 @@ releases:
           enabled: false
         opensearch:
           enabled: false
-      
+
       - opentelemetry-collector:
           resources:
             limits:
@@ -55,7 +55,7 @@ releases:
                 logs:
                   receivers: [otlp]
                   exporters: [otlp]
-      
+
       # 各種リソース
       - components:
           frontend:
@@ -205,7 +205,7 @@ releases:
                 cpu: 50m
                 memory: 64Mi
                 ephemeral-storage: "50Mi"
-          
+
           product-reviews:
             resources:
               limits:
@@ -216,7 +216,6 @@ releases:
                 cpu: 50m
                 memory: 128Mi
                 ephemeral-storage: "50Mi"
-            
 
           recommendation:
             resources:

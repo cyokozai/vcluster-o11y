@@ -26,306 +26,306 @@ releases:
     createNamespace: true
     timeout: 1800
     values:
-    - sync:
-        fromHost:
-          nodes:
-            enabled: true
-          priorityClasses:
-            enabled: true
-          ingressClasses:
-            enabled: true
-          storageClasses:
-            enabled: true
-        toHost:
-          ingresses:
-            enabled: true
-          services:
-            enabled: true
-      controlPlane:
-        backingStore:
-          etcd:
-            deploy:
+      - sync:
+          fromHost:
+            nodes:
               enabled: true
-              statefulSet:
-                persistence:
-                  volumeClaim:
-                    enabled: true
-                    size: 5Gi
-                    storageClass: gp3
-        statefulSet:
-          persistence:
-            volumeClaim:
+            priorityClasses:
               enabled: true
-              size: 10Gi
-              storageClass: gp3
-          scheduling:
-            podManagementPolicy: Parallel
-      deploy:
-        metricsServer:
-          enabled: false
-      policies:
-        podSecurityStandard: "baseline"
-        networkPolicy:
-          enabled: true
-        resourceQuota:
-          enabled: true
-          quota:
-            requests.cpu: "2"
-            requests.memory: "8Gi"
-            limits.cpu: "4"
-            limits.memory: "24Gi"
-      integrations:
-        metricsServer:
-          enabled: false
-          nodes: true
-          pods: true
+            ingressClasses:
+              enabled: true
+            storageClasses:
+              enabled: true
+          toHost:
+            ingresses:
+              enabled: true
+            services:
+              enabled: true
+        controlPlane:
+          backingStore:
+            etcd:
+              deploy:
+                enabled: true
+                statefulSet:
+                  persistence:
+                    volumeClaim:
+                      enabled: true
+                      size: 5Gi
+                      storageClass: gp3
+          statefulSet:
+            persistence:
+              volumeClaim:
+                enabled: true
+                size: 10Gi
+                storageClass: gp3
+            scheduling:
+              podManagementPolicy: Parallel
+        deploy:
+          metricsServer:
+            enabled: false
+        policies:
+          podSecurityStandard: "baseline"
+          networkPolicy:
+            enabled: true
+          resourceQuota:
+            enabled: true
+            quota:
+              requests.cpu: "2"
+              requests.memory: "8Gi"
+              limits.cpu: "4"
+              limits.memory: "24Gi"
+        integrations:
+          metricsServer:
+            enabled: false
+            nodes: true
+            pods: true
 
   - name: tempo
     namespace: monitoring
     chart: grafana/tempo
     version: "1.24.3"
     values:
-    - persistence:
-        enabled: true
-        size: 10Gi
-        storageClass: gp3
-      storage:
-        trace:
-          backend: local
-          local:
-            path: /var/tempo/traces
-          wal:
-            path: /var/tempo/wal
+      - persistence:
+          enabled: true
+          size: 10Gi
+          storageClass: gp3
+        storage:
+          trace:
+            backend: local
+            local:
+              path: /var/tempo/traces
+            wal:
+              path: /var/tempo/wal
 
   - name: loki
     namespace: monitoring
     chart: grafana/loki
     version: "6.52.0"
     values:
-    - deploymentMode: SingleBinary
-      loki:
-        auth_enabled: false
-        commonConfig:
-          path_prefix: /var/loki
-          replication_factor: 1
-        schemaConfig:
-          configs:
-            - from: "2024-04-01"
-              store: tsdb
-              object_store: filesystem
-              schema: v13
-              index:
-                prefix: index_
-                period: 24h
-        storage:
-          type: filesystem
-        limits_config:
-          reject_old_samples: true
-          reject_old_samples_max_age: 168h
-          volume_enabled: true
-      singleBinary:
-        replicas: 1
-        persistence:
-          enabled: true
-          size: 10Gi
-          storageClass: gp3
-      gateway:
-        enabled: false
-      lokiCanary:
-        enabled: false
-      test:
-        enabled: false
-      chunksCache:
-        enabled: false
-      resultsCache:
-        enabled: false
-      read:
-        replicas: 0
-      write:
-        replicas: 0
-      backend:
-        replicas: 0
+      - deploymentMode: SingleBinary
+        loki:
+          auth_enabled: false
+          commonConfig:
+            path_prefix: /var/loki
+            replication_factor: 1
+          schemaConfig:
+            configs:
+              - from: "2024-04-01"
+                store: tsdb
+                object_store: filesystem
+                schema: v13
+                index:
+                  prefix: index_
+                  period: 24h
+          storage:
+            type: filesystem
+          limits_config:
+            reject_old_samples: true
+            reject_old_samples_max_age: 168h
+            volume_enabled: true
+        singleBinary:
+          replicas: 1
+          persistence:
+            enabled: true
+            size: 10Gi
+            storageClass: gp3
+        gateway:
+          enabled: false
+        lokiCanary:
+          enabled: false
+        test:
+          enabled: false
+        chunksCache:
+          enabled: false
+        resultsCache:
+          enabled: false
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        backend:
+          replicas: 0
 
   - name: alloy
     namespace: monitoring
     chart: grafana/alloy
     version: "0.5.0"
     values:
-    - alloy:
-        extraPorts:
-          - name: otlp-grpc
-            port: 4317
-            targetPort: 4317
-            protocol: TCP
-          - name: otlp-http
-            port: 4318
-            targetPort: 4318
-            protocol: TCP
-        configMap:
-          create: true
-          content: |
-            // OTLP Receiver (gRPC and HTTP)
-            otelcol.receiver.otlp "default" {
-              grpc {
-                endpoint = "0.0.0.0:4317"
-              }
-              http {
-                endpoint = "0.0.0.0:4318"
-              }
-              output {
-                metrics = [otelcol.processor.batch.default.input]
-                traces  = [otelcol.processor.batch.default.input]
-                logs    = [otelcol.processor.batch.default.input]
-              }
-            }
-            
-            // Batch Processor (optional but recommended)
-            otelcol.processor.batch "default" {
-              output {
-                metrics = [otelcol.exporter.prometheus.default.input]
-                traces  = [otelcol.exporter.otlp.tempo.input]
-                logs    = [otelcol.exporter.loki.default.input]
-              }
-            }
-            // Exporter: Loki (Logs)
-            otelcol.exporter.loki "default" {
-              forward_to = [loki.write.default.receiver]
-            }
-            loki.write "default" {
-              endpoint {
-                url = "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
-              }
-            }
-            // Exporter: OTLP to Tempo (Traces)
-            otelcol.exporter.otlp "tempo" {
-              client {
-                endpoint = "tempo.monitoring.svc.cluster.local:4317"
-                tls {
-                  insecure = true
+      - alloy:
+          extraPorts:
+            - name: otlp-grpc
+              port: 4317
+              targetPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              port: 4318
+              targetPort: 4318
+              protocol: TCP
+          configMap:
+            create: true
+            content: |
+              // OTLP Receiver (gRPC and HTTP)
+              otelcol.receiver.otlp "default" {
+                grpc {
+                  endpoint = "0.0.0.0:4317"
+                }
+                http {
+                  endpoint = "0.0.0.0:4318"
+                }
+                output {
+                  metrics = [otelcol.processor.batch.default.input]
+                  traces  = [otelcol.processor.batch.default.input]
+                  logs    = [otelcol.processor.batch.default.input]
                 }
               }
-            }
-            // Exporter: Prometheus Remote Write (Metrics)
-            otelcol.exporter.prometheus "default" {
-              forward_to = [prometheus.remote_write.default.receiver]
-            }
-            
-            prometheus.remote_write "default" {
-              endpoint {
-                url = "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+
+              // Batch Processor (optional but recommended)
+              otelcol.processor.batch "default" {
+                output {
+                  metrics = [otelcol.exporter.prometheus.default.input]
+                  traces  = [otelcol.exporter.otlp.tempo.input]
+                  logs    = [otelcol.exporter.loki.default.input]
+                }
               }
-            }
-  
+              // Exporter: Loki (Logs)
+              otelcol.exporter.loki "default" {
+                forward_to = [loki.write.default.receiver]
+              }
+              loki.write "default" {
+                endpoint {
+                  url = "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+                }
+              }
+              // Exporter: OTLP to Tempo (Traces)
+              otelcol.exporter.otlp "tempo" {
+                client {
+                  endpoint = "tempo.monitoring.svc.cluster.local:4317"
+                  tls {
+                    insecure = true
+                  }
+                }
+              }
+              // Exporter: Prometheus Remote Write (Metrics)
+              otelcol.exporter.prometheus "default" {
+                forward_to = [prometheus.remote_write.default.receiver]
+              }
+
+              prometheus.remote_write "default" {
+                endpoint {
+                  url = "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+                }
+              }
+
   - name: kube-prometheus-stack
     namespace: monitoring
     chart: prometheus-community/kube-prometheus-stack
     version: "80.2.0"
     createNamespace: true
     values:
-    # Grafana 設定
-    - grafana:
-        additionalDataSources:
-          - name: Tempo
-            type: tempo
-            uid: tempo
-            url: http://tempo.monitoring:3200
-            access: proxy
-            jsonData:
-              tracesToLogs:
-                datasourceUid: 'loki'
-              nodeGraph:
-                enabled: true
-          - name: Loki
-            type: loki
-            uid: loki
-            url: http://loki.monitoring:3100
-            access: proxy
-            jsonData:
-              derivedFields:
-                - datasourceUid: tempo
-                  matcherRegex: '"traceID":"(\w+)"'
-                  name: TraceID
-                  url: '$${__value.raw}'
-        serviceMonitor:
+      # Grafana 設定
+      - grafana:
+          additionalDataSources:
+            - name: Tempo
+              type: tempo
+              uid: tempo
+              url: http://tempo.monitoring:3200
+              access: proxy
+              jsonData:
+                tracesToLogs:
+                  datasourceUid: 'loki'
+                nodeGraph:
+                  enabled: true
+            - name: Loki
+              type: loki
+              uid: loki
+              url: http://loki.monitoring:3100
+              access: proxy
+              jsonData:
+                derivedFields:
+                  - datasourceUid: tempo
+                    matcherRegex: '"traceID":"(\w+)"'
+                    name: TraceID
+                    url: '$${__value.raw}'
+          serviceMonitor:
+            enabled: true
+            interval: 30s
+            scrapeTimeout: 20s
+
+      # Prometheus Operator 設定
+      - prometheusOperator:
           enabled: true
-          interval: 30s
-          scrapeTimeout: 20s
-        
-    # Prometheus Operator 設定
-    - prometheusOperator:
-        enabled: true
-        admissionWebhooks:
-          enabled: false
-        tls:
-          enabled: false
-        rbac:
-          create: true
-        serviceAccount:
-          create: true
-          name: kube-prometheus-stack-operator
-        hostNetwork: true
-        dnsPolicy: ClusterFirstWithHostNet
-    
-    # Prometheus 本体の設定
-    - prometheus:
-        enabled: true
-        prometheusSpec:
-          scrapeInterval: "15s"
-          evaluationInterval: "15s"
-          enableRemoteWriteReceiver: true
-          serviceMonitorSelectorNilUsesHelmValues: false
-          serviceMonitorSelector: {}
-          serviceMonitorNamespaceSelector: {}
-          additionalScrapeConfigs:
-          - job_name: 'prometheus'
-            static_configs:
-            - targets: ['localhost:9090']
-          - job_name: kube-etcd
-            kubernetes_sd_configs:
-              - role: node
-            scheme: https
-            tls_config:
-              ca_file:   /etc/prometheus/secrets/etcd-client-cert/etcd-ca
-              cert_file: /etc/prometheus/secrets/etcd-client-cert/etcd-client
-              key_file:  /etc/prometheus/secrets/etcd-client-cert/etcd-client-key
-            relabel_configs:
-            - action: labelmap
-              regex: __meta_kubernetes_node_label_(.+)
-            - source_labels: [__address__]
-              action: replace
-              target_label: __address__
-              regex: ([^:;]+):(\d+)
-              replacement: ${1}:2379
-            - source_labels: [__meta_kubernetes_node_name]
-              action: keep
-              regex: .*mst.*
-            - source_labels: [__meta_kubernetes_node_name]
-              action: replace
-              target_label: node
-              regex: (.*)
-              replacement: ${1}
-            metric_relabel_configs:
-            - regex: (kubernetes_io_hostname|failure_domain_beta_kubernetes_io_region|beta_kubernetes_io_os|beta_kubernetes_io_arch|beta_kubernetes_io_instance_type|failure_domain_beta_kubernetes_io_zone)
-              action: labeldrop
-          - job_name: 'kubernetes-pods'
-            kubernetes_sd_configs:
-              - role: pod
-            relabel_configs:
-              - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
-                action: keep
-                regex: true
-              - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-                action: replace
-                target_label: __metrics_path__
-                regex: (.+)
-              - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
-                action: replace
-                regex: ([^:]+)(?::\d+)?;(\d+)
-                replacement: $1:$2
-                target_label: __address__
-              - source_labels: [__meta_kubernetes_namespace]
-                action: replace
-                target_label: namespace
-              - source_labels: [__meta_kubernetes_pod_label_app]
-                action: replace
-                target_label: job
+          admissionWebhooks:
+            enabled: false
+          tls:
+            enabled: false
+          rbac:
+            create: true
+          serviceAccount:
+            create: true
+            name: kube-prometheus-stack-operator
+          hostNetwork: true
+          dnsPolicy: ClusterFirstWithHostNet
+
+      # Prometheus 本体の設定
+      - prometheus:
+          enabled: true
+          prometheusSpec:
+            scrapeInterval: "15s"
+            evaluationInterval: "15s"
+            enableRemoteWriteReceiver: true
+            serviceMonitorSelectorNilUsesHelmValues: false
+            serviceMonitorSelector: {}
+            serviceMonitorNamespaceSelector: {}
+            additionalScrapeConfigs:
+              - job_name: 'prometheus'
+                static_configs:
+                  - targets: ['localhost:9090']
+              - job_name: kube-etcd
+                kubernetes_sd_configs:
+                  - role: node
+                scheme: https
+                tls_config:
+                  ca_file: /etc/prometheus/secrets/etcd-client-cert/etcd-ca
+                  cert_file: /etc/prometheus/secrets/etcd-client-cert/etcd-client
+                  key_file: /etc/prometheus/secrets/etcd-client-cert/etcd-client-key
+                relabel_configs:
+                  - action: labelmap
+                    regex: __meta_kubernetes_node_label_(.+)
+                  - source_labels: [__address__]
+                    action: replace
+                    target_label: __address__
+                    regex: ([^:;]+):(\d+)
+                    replacement: ${1}:2379
+                  - source_labels: [__meta_kubernetes_node_name]
+                    action: keep
+                    regex: .*mst.*
+                  - source_labels: [__meta_kubernetes_node_name]
+                    action: replace
+                    target_label: node
+                    regex: (.*)
+                    replacement: ${1}
+                metric_relabel_configs:
+                  - regex: (kubernetes_io_hostname|failure_domain_beta_kubernetes_io_region|beta_kubernetes_io_os|beta_kubernetes_io_arch|beta_kubernetes_io_instance_type|failure_domain_beta_kubernetes_io_zone)
+                    action: labeldrop
+              - job_name: 'kubernetes-pods'
+                kubernetes_sd_configs:
+                  - role: pod
+                relabel_configs:
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                    action: keep
+                    regex: true
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+                    action: replace
+                    target_label: __metrics_path__
+                    regex: (.+)
+                  - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+                    action: replace
+                    regex: ([^:]+)(?::\d+)?;(\d+)
+                    replacement: $1:$2
+                    target_label: __address__
+                  - source_labels: [__meta_kubernetes_namespace]
+                    action: replace
+                    target_label: namespace
+                  - source_labels: [__meta_kubernetes_pod_label_app]
+                    action: replace
+                    target_label: job
