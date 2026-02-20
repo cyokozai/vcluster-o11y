@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "OTel Demo サービスの RED メトリクス（Request Rate / Error Rate / Latency）を監視します",
+  "description": "OTel Demo サービスの RED メトリクス (Request Rate / Error Rate / Latency) を監視します",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -91,7 +91,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 16
+        "y": 0
       },
       "id": 9,
       "options": {
@@ -197,7 +197,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 16
+        "y": 0
       },
       "id": 10,
       "options": {
@@ -301,7 +301,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 16
+        "y": 0
       },
       "id": 12,
       "options": {
@@ -373,7 +373,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Service Overview",
+  "title": "vCluster dashboard - Service Overview",
   "uid": "service-overview-d1",
-  "version": 22
+  "version": 2
 }
