@@ -15,10 +15,11 @@
       }
     ]
   },
+  "description": "vCluster上のリソースとHostクラスタのリソースの監視を行います",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 29,
+  "id": 0,
   "links": [],
   "panels": [
     {
@@ -195,7 +196,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "(\nsum by (namespace) (\n  irate(container_cpu_usage_seconds_total{image!=\"\", pod!=\"\"}[5m])\n) \n/ \non(node) group_left() \nsum by (namespace) (\n  kube_node_status_capacity{resource=\"cpu\"}\n) \n* 100\n)",
+          "expr": "(\nsum by (namespace) (\n  irate(container_cpu_usage_seconds_total{image!=\"\", pod!=\"\"}[5m])\n)\n/\nscalar(sum(kube_node_status_capacity{resource=\"cpu\"}))\n* 100\n)\n",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1900,7 +1901,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "vCluster dashbord",
+  "title": "vCluster dashboard",
   "uid": "ad46ww6",
-  "version": 20
+  "version": 22
 }
