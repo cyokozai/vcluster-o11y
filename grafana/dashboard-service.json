@@ -368,12 +368,12 @@
     "list": []
   },
   "time": {
-    "from": "2026-02-10T06:14:53.876Z",
-    "to": "2026-02-10T07:24:40.268Z"
+    "from": "now-12h",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "vCluster dashboard - Service Overview",
   "uid": "service-overview-d1",
-  "version": 2
+  "version": 3
 }
