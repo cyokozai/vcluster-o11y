@@ -115,7 +115,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\"}[5m])\n)",
+          "expr": "sum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n)",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -221,7 +221,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", status_code=\"STATUS_CODE_ERROR\"}[5m])\n)\n/\nsum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\"}[5m])\n)",
+          "expr": "sum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", status_code=\"STATUS_CODE_ERROR\", service_name=~\"$service_name\"}[5m])\n)\n/\nsum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n)",
           "range": true,
           "refId": "A"
         }
@@ -325,7 +325,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.99,\n  sum by (service_name, le) (\n    rate(traces_span_metrics_duration_milliseconds_bucket{span_kind=\"SPAN_KIND_SERVER\"}[5m])\n  )\n)",
+          "expr": "histogram_quantile(0.99,\n  sum by (service_name, le) (\n    rate(traces_span_metrics_duration_milliseconds_bucket{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n  )\n)",
           "range": true,
           "refId": "A"
         },
@@ -335,7 +335,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95,\n  sum by (service_name, le) (\n    rate(traces_span_metrics_duration_milliseconds_bucket{span_kind=\"SPAN_KIND_SERVER\"}[5m])\n  )\n)",
+          "expr": "histogram_quantile(0.95,\n  sum by (service_name, le) (\n    rate(traces_span_metrics_duration_milliseconds_bucket{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n  )\n)",
           "hide": false,
           "instant": false,
           "legendFormat": "__auto",
@@ -348,7 +348,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.50,\n  sum by (service_name, le) (\n    rate(traces_span_metrics_duration_milliseconds_bucket{span_kind=\"SPAN_KIND_SERVER\"}[5m])\n  )\n)",
+          "expr": "histogram_quantile(0.50,\n  sum by (service_name, le) (\n    rate(traces_span_metrics_duration_milliseconds_bucket{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n  )\n)",
           "hide": false,
           "instant": false,
           "legendFormat": "__auto",
@@ -358,6 +358,191 @@
       ],
       "title": "Latency by Service (P50 / P95 / P99)",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "サービスごとの現在のリクエストレート・エラーレート一覧（Error Rate 降順）",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Error Rate"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.05
+                    },
+                    {
+                      "color": "red",
+                      "value": 0.1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Request Rate (req/s)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "reqps"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 13,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Error Rate"
+          }
+        ]
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n)",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", status_code=\"STATUS_CODE_ERROR\", service_name=~\"$service_name\"}[5m])\n)\n/\nsum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n)",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "refId": "B"
+        }
+      ],
+      "title": "Service Health Summary",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value #A": "Request Rate (req/s)",
+              "Value #B": "Error Rate",
+              "service_name": "Service"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "tempo"
+      },
+      "description": "サービス間の依存関係と呼び出しフロー（Tempo Service Graph）",
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 14,
+      "options": {},
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "tempo"
+          },
+          "queryType": "serviceMap",
+          "refId": "A",
+          "serviceMapQuery": ""
+        }
+      ],
+      "title": "Service Map",
+      "type": "nodeGraph"
     }
   ],
   "preload": false,
@@ -365,7 +550,31 @@
   "schemaVersion": 42,
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(traces_span_metrics_calls_total, service_name)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "service_name",
+        "options": [],
+        "query": {
+          "query": "label_values(traces_span_metrics_calls_total, service_name)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query",
+        "label": "Service",
+        "allValue": ".*"
+      }
+    ]
   },
   "time": {
     "from": "now-12h",
