@@ -20,6 +20,10 @@
 
 **Grafana 操作**: Alerting > Notification policies
 
+Root policy（デフォルトポリシー）の編集のみ行う。「Add notification policy」（子ポリシー追加）は使用しない。
+
+Root policy の編集ボタン（鉛筆アイコン）をクリックし、以下を設定する:
+
 | 設定項目 | 値 |
 |---|---|
 | Default contact point | `grafana-default-email` (自動作成済み) |
@@ -83,17 +87,27 @@ Expression D (Threshold):
 
 **Alert condition**: D
 
-**Annotations:**
-| Key | Value |
-|---|---|
-| summary | `{{ $labels.service_name }} のエラーレートが {{ $values.C }}% を超過` |
-| description | `サービス {{ $labels.service_name }} のエラーレートが閾値 5% を超えています。現在値: {{ $values.C }}%` |
+**Section 3 - Add folder and labels:**
 
-**Labels:**
-| Key | Value |
+| 設定項目 | 値 |
 |---|---|
-| severity | `critical` |
-| team | `platform` |
+| Folder | `OTEL Demo Alerts`（「+ New folder」で新規作成） |
+| Labels / severity | `critical` |
+| Labels / team | `platform` |
+
+**Section 4 - Set evaluation behavior:**
+
+| 設定項目 | 値 |
+|---|---|
+| Evaluation group | `service-health`（「+ New evaluation group」で新規作成、interval: `1m`） |
+| Pending period | `5m` |
+
+**Section 6 - Configure notification message:**
+
+| 設定項目 | 値 |
+|---|---|
+| Summary | `{{ $labels.service_name }} のエラーレートが {{ $values.C }}% を超過` |
+| Description | `サービス {{ $labels.service_name }} のエラーレートが閾値 5% を超えています。現在値: {{ $values.C }}%` |
 
 ---
 
