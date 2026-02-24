@@ -9,15 +9,10 @@
 
 ## 1. Contact Point の設定
 
-**Grafana 操作**: Alerting > Contact points > Add contact point
+本検証では `kube-prometheus-stack` により自動作成される `grafana-default-email` をそのまま使用する。
+新規作成は不要。アラートの発火確認は **Alerting > Alert rules** で Firing 状態への変化により行う。
 
-本検証では Grafana のデフォルト Contact Point (Grafana UI 上の通知) を使用する。
-Slack 等の外部通知が必要な場合は追加で設定する。
-
-| 設定項目 | 値 |
-|---|---|
-| Name | `grafana-default-ui` |
-| Type | Grafana UI 上の通知 |
+> Slack 等の外部通知が必要な場合は Alerting > Contact points > Add contact point から追加する。
 
 ---
 
@@ -27,7 +22,7 @@ Slack 等の外部通知が必要な場合は追加で設定する。
 
 | 設定項目 | 値 |
 |---|---|
-| Default contact point | `grafana-default-ui` |
+| Default contact point | `grafana-default-email` (自動作成済み) |
 | Group by | `alertname`, `service_name` |
 | Group wait | 30s |
 | Group interval | 5m |
