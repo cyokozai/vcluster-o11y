@@ -23,7 +23,7 @@
 | 設定項目 | 値 |
 |---|---|
 | Default contact point | `grafana-default-email` (自動作成済み) |
-| Group by | `alertname`, `service_name` |
+| Group by | `alertname` |
 | Group wait | 30s |
 | Group interval | 5m |
 | Repeat interval | 4h |
