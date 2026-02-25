@@ -3,7 +3,7 @@
 ## 前提条件
 
 - Step 2 のダッシュボード (Service Overview / RED Metrics / Infrastructure / Telemetry Pipeline) が構築済み
-- Step 3 のアラートルール (6 ルール) が設定済み
+- Step 3 のアラートルール (7 ルール) が設定済み
 - `valkey-cart` の Pending 問題が解消済み (全サービスが正常稼働)
 - 全 Feature Flag が `off` 状態 (ベースライン)
 
