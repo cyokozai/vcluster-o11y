@@ -248,6 +248,8 @@ releases:
                   datasourceUid: 'loki'
                 nodeGraph:
                   enabled: true
+                serviceMap:
+                  datasourceUid: 'prometheus'
             - name: Loki
               type: loki
               uid: loki
