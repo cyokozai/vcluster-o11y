@@ -74,8 +74,9 @@ Expression C (Error Rate = B / A):
 | 設定 | 値 |
 |---|---|
 | Operation | Math |
-| Expression | `($B / $A) * 100` |
+| Expression | `(${Error requests} / ${Total requests}) * 100` |
 
+> Query の Legend に名前を設定している場合は Legend 名で参照する（例: `${Error requests}`）。Legend が未設定の場合は `$B / $A * 100` でも可。分子・分母を逆にすると Infinity になるため注意。
 > Expression C の結果は 0〜100 のパーセント値になる。
 
 Expression D (Threshold):
