@@ -179,7 +179,7 @@ histogram_quantile(0.99,
 | Folder | `OTEL Demo Alerts` |
 | Group | `service-health` |
 | Evaluation interval | `5m`（service-health グループ共通） |
-| Pending period | `3m` |
+| Pending period | `5m`（Evaluation interval が 5m のため 3m 以下は設定不可） |
 | Severity label | `critical` |
 
 **Query A:**
