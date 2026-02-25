@@ -296,7 +296,7 @@ groups:
           for: 5m
           annotations:
             description: 'サービス {{ $labels.service_name }} のエラーレートが閾値 5% を超えています。現在値: {{ index $values "Error Rate" }}%'
-            summary: '{{ $labels.service_name }} のエラーレートが {{ $values.C }}% を超過'
+            summary: '{{ $labels.service_name }} のエラーレートが {{ index $values "Error Rate" }}% を超過'
           labels:
             severity: critical
             team: platform
@@ -418,7 +418,7 @@ groups:
                 type: threshold
           noDataState: NoData
           execErrState: Error
-          for: 5m
+          for: 3m
           annotations:
             description: サービス {{ $labels.service_name }} の直近 3 分間の成功リクエストレートがほぼ 0 です
             summary: '{{ $labels.service_name }} がダウンしている可能性'
