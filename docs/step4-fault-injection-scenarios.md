@@ -10,13 +10,11 @@
 ### flagd-ui へのアクセス
 
 ```bash
-# vCluster に接続
-vcluster connect otel-demo -n vcluster-otel-demo
+# host クラスターから直接接続 (vcluster connect 不要)
+# flagd-ui は flagd Pod に同居しポート 4000 で動作する
+kubectl port-forward svc/flagd-x-otel-demo-x-otel-demo 4000:4000 -n vcluster-otel-demo
 
-# flagd-ui をポートフォワード
-kubectl port-forward svc/flagd-ui 8080:8080 -n otel-demo
-
-# ブラウザで http://localhost:8080 にアクセス
+# ブラウザで http://localhost:4000 にアクセス
 ```
 
 ### Grafana へのアクセス
@@ -102,7 +100,7 @@ flowchart LR
 
 #### 1-2. 障害注入 (所要: 1分)
 
-1. flagd-ui (http://localhost:8080) を開く
+1. flagd-ui (http://localhost:4000) を開く
 2. `adFailure` を `on` に変更
 3. 変更時刻を記録: ____:____
 
