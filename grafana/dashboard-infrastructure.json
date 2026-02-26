@@ -19,7 +19,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 29,
+  "id": 0,
   "links": [],
   "panels": [
     {
@@ -1933,7 +1933,7 @@
     }
   ],
   "preload": false,
-  "refresh": "5s",
+  "refresh": "10s",
   "schemaVersion": 42,
   "tags": [],
   "templating": {
@@ -1947,5 +1947,5 @@
   "timezone": "browser",
   "title": "vCluster dashboard - Infrastructure Overview",
   "uid": "ad46ww6",
-  "version": 43
+  "version": 44
 }
