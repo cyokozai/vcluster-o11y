@@ -19,7 +19,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 0,
+  "id": 31,
   "links": [],
   "panels": [
     {
@@ -375,6 +375,9 @@
             "cellOptions": {
               "type": "auto"
             },
+            "footer": {
+              "reducers": []
+            },
             "inspect": false
           },
           "mappings": [],
@@ -383,7 +386,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               }
             ]
           }
@@ -406,7 +409,7 @@
                   "steps": [
                     {
                       "color": "green",
-                      "value": null
+                      "value": 0
                     },
                     {
                       "color": "yellow",
@@ -521,6 +524,10 @@
         "uid": "tempo"
       },
       "description": "サービス間の依存関係と呼び出しフロー（Tempo Service Graph）",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 16,
         "w": 24,
@@ -528,7 +535,12 @@
         "y": 16
       },
       "id": 14,
-      "options": {},
+      "options": {
+        "edges": {},
+        "layoutAlgorithm": "layered",
+        "nodes": {},
+        "zoomMode": "cooperative"
+      },
       "pluginVersion": "12.3.0",
       "targets": [
         {
@@ -536,9 +548,20 @@
             "type": "tempo",
             "uid": "tempo"
           },
-          "queryType": "serviceMap",
+          "filters": [
+            {
+              "id": "336136c1",
+              "operator": "=",
+              "scope": "span"
+            }
+          ],
+          "limit": 20,
+          "metricsQueryType": "range",
+          "queryType": "traceql",
           "refId": "A",
-          "serviceMapQuery": ""
+          "serviceMapQuery": "",
+          "serviceMapUseNativeHistograms": false,
+          "tableType": "traces"
         }
       ],
       "title": "Service Map",
@@ -552,14 +575,20 @@
   "templating": {
     "list": [
       {
-        "current": {},
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        },
         "datasource": {
           "type": "prometheus",
           "uid": "prometheus"
         },
         "definition": "label_values(traces_span_metrics_calls_total, service_name)",
-        "hide": 0,
         "includeAll": true,
+        "label": "Service",
         "multi": true,
         "name": "service_name",
         "options": [],
@@ -570,19 +599,17 @@
         "refresh": 2,
         "regex": "",
         "sort": 1,
-        "type": "query",
-        "label": "Service",
-        "allValue": ".*"
+        "type": "query"
       }
     ]
   },
   "time": {
-    "from": "now-12h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "vCluster dashboard - Service Overview",
   "uid": "service-overview-d1",
-  "version": 3
+  "version": 5
 }

@@ -10,10 +10,9 @@
 ### flagd-ui へのアクセス
 
 ```bash
-# vCluster に接続してから frontend-proxy 経由でアクセスする
+# host クラスターから直接接続 (vcluster connect 不要)
 # flagd-ui は /feature パスで配信されており、直接ポート 4000 アクセスは不可
-vcluster connect otel-demo -n vcluster-otel-demo
-kubectl port-forward svc/frontend-proxy 8080:8080 -n otel-demo
+kubectl port-forward svc/frontend-proxy-x-otel-demo-x-otel-demo 8080:8080 -n vcluster-otel-demo
 
 # ブラウザで http://localhost:8080/feature にアクセス
 ```
