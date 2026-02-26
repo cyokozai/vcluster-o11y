@@ -382,7 +382,8 @@ groups:
                     sum by (service_name) (
                       rate(traces_span_metrics_calls_total{
                         span_kind="SPAN_KIND_SERVER",
-                        status_code!="STATUS_CODE_ERROR"
+                        status_code!="STATUS_CODE_ERROR",
+                        service_name!="image-provider"
                       }[3m])
                     )
                 instant: true
