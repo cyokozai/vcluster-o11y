@@ -10,11 +10,12 @@
 ### flagd-ui へのアクセス
 
 ```bash
-# host クラスターから直接接続 (vcluster connect 不要)
-# flagd-ui は flagd Pod に同居しポート 4000 で動作する
-kubectl port-forward svc/flagd-x-otel-demo-x-otel-demo 4000:4000 -n vcluster-otel-demo
+# vCluster に接続してから frontend-proxy 経由でアクセスする
+# flagd-ui は /feature パスで配信されており、直接ポート 4000 アクセスは不可
+vcluster connect otel-demo -n vcluster-otel-demo
+kubectl port-forward svc/frontend-proxy 8080:8080 -n otel-demo
 
-# ブラウザで http://localhost:4000 にアクセス
+# ブラウザで http://localhost:8080/feature にアクセス
 ```
 
 ### Grafana へのアクセス
