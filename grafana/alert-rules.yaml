@@ -317,7 +317,10 @@ groups:
                 expr: |-
                     histogram_quantile(0.99,
                       sum by (service_name, le) (
-                        rate(traces_span_metrics_duration_milliseconds_bucket{span_kind="SPAN_KIND_SERVER"}[5m])
+                        rate(traces_span_metrics_duration_milliseconds_bucket{
+                          span_kind="SPAN_KIND_SERVER",
+                          service_name!~"flagd|image-provider"
+                        }[5m])
                       )
                     )
                 instant: true

@@ -117,11 +117,11 @@ releases:
             resources:
               limits:
                 cpu: 2000m
-                memory: 150Mi
+                memory: 300Mi
                 ephemeral-storage: "500Mi"
               requests:
                 cpu: 50m
-                memory: 120Mi
+                memory: 200Mi
                 ephemeral-storage: "50Mi"
 
           ad:
