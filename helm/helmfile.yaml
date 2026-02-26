@@ -94,26 +94,27 @@ releases:
           enabled: true
           size: 10Gi
           storageClass: gp3
-        storage:
-          trace:
-            backend: local
-            local:
-              path: /var/tempo/traces
-            wal:
-              path: /var/tempo/wal
-        metricsGenerator:
-          enabled: true
-          remoteWriteUrl: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
-          processor:
-            service_graphs:
-              wait: 10s
-              max_items: 10000
-            span_metrics:
-              enable_target_info: true
-          storage:
-            path: "/var/tempo/metrics"
-          traces_storage:
-            path: "/var/tempo/wal"
+        tempo:
+          metricsGenerator:
+            enabled: true
+            remoteWriteUrl: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+            processor:
+              service_graphs:
+                wait: 10s
+                max_items: 10000
+              span_metrics:
+                enable_target_info: true
+            storage:
+              path: "/var/tempo/metrics"
+            traces_storage:
+              path: "/var/tempo/wal"
+          overrides:
+            defaults:
+              metrics_generator:
+                processors:
+                  - service-graphs
+                  - span-metrics
+                max_active_series: 10000
 
   - name: loki
     namespace: monitoring
