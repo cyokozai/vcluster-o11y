@@ -74,8 +74,6 @@ releases:
               requests.memory: "8Gi"
               limits.cpu: "4"
               limits.memory: "24Gi"
-              count/services: "50"
-              count/endpoints: "60"
         integrations:
           metricsServer:
             enabled: false
