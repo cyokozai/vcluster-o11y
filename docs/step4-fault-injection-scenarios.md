@@ -100,7 +100,7 @@ flowchart LR
 
 #### 1-2. 障害注入 (所要: 1分)
 
-1. flagd-ui (http://localhost:8080/feature) を開く
+1. flagd-ui (<http://localhost:8080/feature>) を開く
 2. `adFailure` を `on` に変更
 3. 変更時刻を記録: ____:____
 

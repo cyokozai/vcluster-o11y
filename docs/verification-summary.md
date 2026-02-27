@@ -71,7 +71,7 @@ kubelet_volume_stats_used_bytes{namespace="monitoring"}
 / kubelet_volume_stats_capacity_bytes{namespace="monitoring"} > 0.85
 ```
 
-> **計画書との差異**: `StorageNearFull` / `vClusterQuotaExhaustion` の `for` は計画書の 5m に対し実装は **10m**。`TelemetryPipelineDrop` の `for` は計画書の 1m に対し実装は **3m**。
+> **計画書との差異**: `StorageNearFull` / `vClusterQuotaExhaustion` の `for` は計画書の 5m に対し実装は **10m**。`TelemetryPipelineDrop` の `for` は計画書の 1m に対し実装は **3m**。これらはストレージやリソースクォータの一時的なスパイクによる誤検知を抑制するため、評価時間を延長した意図的な変更である。
 
 ---
 
