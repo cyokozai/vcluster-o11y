@@ -10,6 +10,12 @@
 | **kube-prometheus-stack** | prometheus-community/kube-prometheus-stack | 80.2.0 | monitoring |
 | **vCluster** | loft/vcluster | 0.30.4 | vcluster-system |
 
+## CLI ツール
+
+| ツール | 用途 |
+| --- | --- |
+| **mimirtool** | `grafana/alert-rules.yaml` のアラートルールを Grafana API 経由でインポート |
+
 ## 検証
 
 | コンポーネント | 役割 |
@@ -18,10 +24,14 @@
 | **Tempo** | Trace データの保存・検索 |
 | **Loki** | ログデータの保存・検索 |
 | **Prometheus (kube-prometheus-stack)** | メトリクス監視 (エラーレート可視化) |
-| **Grafana (kube-prometheus-stack)** | Tempo / Loki の DataSource 追加済み |
+| **Grafana (kube-prometheus-stack)** | Tempo / Loki の DataSource 追加済み、アラートルール・ダッシュボードをインポート済み |
+| **mimirtool** | `grafana/alert-rules.yaml` のアラートルールを Grafana にインポート |
 
 ## Resources
 
+- mimirtool
+  - [GitHub](https://github.com/grafana/mimir)
+  - [ドキュメント](https://grafana.com/docs/mimir/latest/manage/tools/mimirtool/)
 - vCluster
   - [GitHub](https://github.com/loft-sh/vcluster)
   - [Artifact Hub](https://artifacthub.io/packages/helm/loft/vcluster)
@@ -55,13 +65,30 @@
     helmfile sync -f helm/helmfile.yaml
     ```
 
-1. Grafana アラートルールを適用
+1. Grafana にアラートルール・ダッシュボードをインポート
+
+    API 経由でインポートする場合は `mimirtool` を使用する
 
     ```bash
-    kubectl apply -f manifests/monitoring/grafana-alert-rules.yaml
+    # mimirtool のインストール (未インストールの場合)
+    brew install grafana/grafana/mimirtool
+
+    # Grafana の API キーを取得 (admin パスワードは Usage セクション参照)
+    export GRAFANA_ADDRESS=http://localhost:3000
+    export GRAFANA_API_KEY=<API キー>
+
+    # アラートルールのインポート
+    mimirtool rules load grafana/alert-rules.yaml \
+      --address=${GRAFANA_ADDRESS} \
+      --key=${GRAFANA_API_KEY} \
+      --backend=grafana
     ```
 
-    > `grafana.sidecar.alerts` が ConfigMap を検知し、Grafana に自動ロードされる
+    ダッシュボードは Grafana Web UI からインポートする
+
+    1. Grafana にログイン
+    1. Dashboards > New > Import
+    1. `grafana/dashboard-infrastructure.json` または `grafana/dashboard-service.json` をアップロード
 
 ### 2. 仮想クラスタの構築とデモアプリのデプロイ
 
