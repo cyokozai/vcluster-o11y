@@ -40,45 +40,55 @@
 
 ## Install
 
-1. Set repositories
+### 1. ホストクラスタへの監視スタックのデプロイ
+
+1. Helm リポジトリを登録
 
     ```bash
     helmfile repos -f helm/helmfile.yaml
-    ```
-
-- Update the repositories
-
-    ```bash
     helm repo update
     ```
 
-- Sync up custom resources to the host cluster
+1. ホストクラスタに監視スタックをデプロイ
 
     ```bash
     helmfile sync -f helm/helmfile.yaml
     ```
 
-- Apply custom resources to the host cluster
+### 2. 仮想クラスタの構築とデモアプリのデプロイ
+
+1. 仮想クラスタを作成
 
     ```bash
-    helmfile apply -f helm/helmfile.yaml
+    vcluster create otel-demo \
+      --namespace vcluster-otel-demo \
+      --upgrade \
+      --values manifests/vcluster/config.yaml
+    ```
+
+    > クラスタ作成後、kubectl のコンテキストが自動で仮想クラスタに切り替わる
+
+1. デモアプリ (OpenTelemetry Demo) を仮想クラスタにデプロイ
+
+    ```bash
+    helmfile sync -f helm/demo-otel.yaml
     ```
 
 ## Usage
 
 - Prometheus
-    - http://localhost:9090/
+  - <http://localhost:9090/>
 
-        ```bash
-        kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:9090
-        ```
+    ```bash
+    kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:9090
+    ```
 
 - Grafana
-    - http://localhost:3000/
+  - <http://localhost:3000/>
 
-        ```bash
-        kubectl port-forward svc/kube-prometheus-stack-grafana  -n monitoring 3000:80
-        ```
+    ```bash
+    kubectl port-forward svc/kube-prometheus-stack-grafana -n monitoring 3000:80
+    ```
 
 - vCluster
 
@@ -88,8 +98,7 @@
 
 ## Uninstall
 
-- Clean up
-
-    ```bash
-    helmfile destroy -f helm/helmfile.yaml
-    ```
+```bash
+helmfile destroy -f helm/helmfile.yaml
+vcluster delete otel-demo --namespace vcluster-otel-demo
+```
