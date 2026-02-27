@@ -55,6 +55,14 @@
     helmfile sync -f helm/helmfile.yaml
     ```
 
+1. Grafana アラートルールを適用
+
+    ```bash
+    kubectl apply -f manifests/monitoring/grafana-alert-rules-configmap.yaml
+    ```
+
+    > `grafana.sidecar.alerts` が ConfigMap を検知し、Grafana に自動ロードされる
+
 ### 2. 仮想クラスタの構築とデモアプリのデプロイ
 
 1. 仮想クラスタを作成
