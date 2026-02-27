@@ -1,6 +1,6 @@
-# Helmfile による各種リソースのインストール
+# Helmfile による各種コンポーネントのインストール
 
-## helmfile 経由でカスタムリソースをインストール
+## helmfile 経由でコンポーネントをインストール
 
 | コンポーネント | Chart | バージョン | Namespace |
 | --- | --- | --- | --- |
@@ -58,7 +58,7 @@
 1. Grafana アラートルールを適用
 
     ```bash
-    kubectl apply -f manifests/monitoring/grafana-alert-rules-configmap.yaml
+    kubectl apply -f manifests/monitoring/grafana-alert-rules.yaml
     ```
 
     > `grafana.sidecar.alerts` が ConfigMap を検知し、Grafana に自動ロードされる
