@@ -10,12 +10,6 @@
 | **kube-prometheus-stack** | prometheus-community/kube-prometheus-stack | 80.2.0 | monitoring |
 | **vCluster** | loft/vcluster | 0.30.4 | vcluster-system |
 
-## CLI ツール
-
-| ツール | 用途 |
-| --- | --- |
-| **mimirtool** | `grafana/alert-rules.yaml` のアラートルールを Grafana API 経由でインポート |
-
 ## 検証
 
 | コンポーネント | 役割 |
@@ -24,14 +18,10 @@
 | **Tempo** | Trace データの保存・検索 |
 | **Loki** | ログデータの保存・検索 |
 | **Prometheus (kube-prometheus-stack)** | メトリクス監視 (エラーレート可視化) |
-| **Grafana (kube-prometheus-stack)** | Tempo / Loki の DataSource 追加済み、アラートルール・ダッシュボードをインポート済み |
-| **mimirtool** | `grafana/alert-rules.yaml` のアラートルールを Grafana にインポート |
+| **Grafana (kube-prometheus-stack)** | Tempo / Loki の DataSource 追加済み |
 
 ## Resources
 
-- mimirtool
-  - [GitHub](https://github.com/grafana/mimir)
-  - [ドキュメント](https://grafana.com/docs/mimir/latest/manage/tools/mimirtool/)
 - vCluster
   - [GitHub](https://github.com/loft-sh/vcluster)
   - [Artifact Hub](https://artifacthub.io/packages/helm/loft/vcluster)
@@ -65,30 +55,13 @@
     helmfile sync -f helm/helmfile.yaml
     ```
 
-1. Grafana にアラートルール・ダッシュボードをインポート
-
-    API 経由でインポートする場合は `mimirtool` を使用する
+1. Grafana アラートルールを適用
 
     ```bash
-    # mimirtool のインストール (未インストールの場合)
-    brew install grafana/grafana/mimirtool
-
-    # Grafana の API キーを取得 (admin パスワードは Usage セクション参照)
-    export GRAFANA_ADDRESS=http://localhost:3000
-    export GRAFANA_API_KEY=<API キー>
-
-    # アラートルールのインポート
-    mimirtool rules load grafana/alert-rules.yaml \
-      --address=${GRAFANA_ADDRESS} \
-      --key=${GRAFANA_API_KEY} \
-      --backend=grafana
+    kubectl apply -f manifests/monitoring/grafana-alert-rules.yaml
     ```
 
-    ダッシュボードは Grafana Web UI からインポートする
-
-    1. Grafana にログイン
-    1. Dashboards > New > Import
-    1. `grafana/dashboard-infrastructure.json` または `grafana/dashboard-service.json` をアップロード
+    > `grafana.sidecar.alerts` が ConfigMap を検知し、Grafana に自動ロードされる
 
 ### 2. 仮想クラスタの構築とデモアプリのデプロイ
 
@@ -123,6 +96,14 @@
 
     ```bash
     kubectl port-forward svc/kube-prometheus-stack-grafana -n monitoring 3000:80
+    ```
+
+  - ログイン情報: ユーザー名 `admin`、パスワードは Secret から取得
+
+    ```bash
+    export PASSWORD=$(kubectl get secret kube-prometheus-stack-grafana -n monitoring \
+      -o jsonpath="{.data.admin-password}" | base64 --decode)
+    echo $PASSWORD
     ```
 
 - vCluster

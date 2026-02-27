@@ -271,6 +271,13 @@ releases:
             enabled: true
             interval: 30s
             scrapeTimeout: 20s
+          # アラートルール ConfigMap をサイドカーで自動ロード
+          sidecar:
+            alerts:
+              enabled: true
+              label: grafana_alert
+              labelValue: "1"
+              searchNamespace: monitoring
 
       # Prometheus Operator 設定
       - prometheusOperator:
