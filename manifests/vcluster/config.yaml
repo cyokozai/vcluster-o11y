@@ -88,10 +88,10 @@ policies:
   resourceQuota:
     enabled: true
     quota:
-      requests.cpu: "4"
+      requests.cpu: "8"
       requests.memory: "16Gi"
       limits.cpu: "96"
-      limits.memory: "16Gi"
+      limits.memory: "64Gi"
       count/pods: "50"
       count/services: "50"
       count/endpoints: "60"
