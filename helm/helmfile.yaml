@@ -272,6 +272,557 @@ releases:
             interval: 30s
             scrapeTimeout: 20s
 
+      # Grafana アラートルール プロビジョニング
+      - grafana:
+          alerting:
+            "alert-rules.yaml":
+              apiVersion: 1
+              groups:
+                - orgId: 1
+                  name: infrastructure
+                  folder: OTEL Demo Alerts
+                  interval: 5m
+                  rules:
+                    - uid: dfeao8wei51c0c
+                      title: StorageNearFull
+                      condition: Threshold
+                      data:
+                        - refId: Storage Near Full
+                          relativeTimeRange:
+                            from: 600
+                            to: 0
+                          datasourceUid: prometheus
+                          model:
+                            editorMode: code
+                            expr: |-
+                              kubelet_volume_stats_used_bytes{namespace="monitoring"}
+                              /
+                              kubelet_volume_stats_capacity_bytes{namespace="monitoring"}
+                            instant: true
+                            intervalMs: 1000
+                            legendFormat: __auto
+                            maxDataPoints: 43200
+                            range: false
+                            refId: Storage Near Full
+                        - refId: Threshold
+                          datasourceUid: __expr__
+                          model:
+                            conditions:
+                              - evaluator:
+                                  params:
+                                    - 0.85
+                                  type: gt
+                                operator:
+                                  type: and
+                                query:
+                                  params:
+                                    - C
+                                reducer:
+                                  params: []
+                                  type: last
+                                type: query
+                            datasource:
+                              type: __expr__
+                              uid: __expr__
+                            expression: Storage Near Full
+                            intervalMs: 1000
+                            maxDataPoints: 43200
+                            refId: Threshold
+                            type: threshold
+                      noDataState: NoData
+                      execErrState: Error
+                      for: 10m
+                      annotations:
+                        description: 'PVC の使用率が 85% を超えています。現在値: {{ index $values "Storage Near Full" }}'
+                        summary: PVC のストレージが残り少なくなっています
+                      labels:
+                        severity: warning
+                        team: platform
+                      isPaused: false
+                      notification_settings:
+                        receiver: grafana-default-email
+                    - uid: cfeaow5kmjjlsc
+                      title: vClusterQuotaExhaustion
+                      condition: Threshold
+                      data:
+                        - refId: Usage ratio
+                          relativeTimeRange:
+                            from: 600
+                            to: 0
+                          datasourceUid: prometheus
+                          model:
+                            datasource:
+                              type: prometheus
+                              uid: prometheus
+                            editorMode: code
+                            expr: |-
+                              kube_resourcequota{namespace="vcluster-otel-demo", type="used"}
+                              / ignoring(type)
+                              kube_resourcequota{namespace="vcluster-otel-demo", type="hard"}
+                            instant: true
+                            intervalMs: 1000
+                            legendFormat: __auto
+                            maxDataPoints: 43200
+                            range: false
+                            refId: Usage ratio
+                        - refId: Threshold
+                          datasourceUid: __expr__
+                          model:
+                            conditions:
+                              - evaluator:
+                                  params:
+                                    - 0.8
+                                    - 0
+                                  type: gt
+                                operator:
+                                  type: and
+                                query:
+                                  params: []
+                                reducer:
+                                  params: []
+                                  type: avg
+                                type: query
+                            datasource:
+                              name: Expression
+                              type: __expr__
+                              uid: __expr__
+                            expression: Usage ratio
+                            intervalMs: 1000
+                            maxDataPoints: 43200
+                            refId: Threshold
+                            type: threshold
+                      noDataState: NoData
+                      execErrState: Error
+                      for: 10m
+                      annotations:
+                        description: 'vCluster (vcluster-otel-demo) の ResourceQuota {{ $labels.resource }} の使用率が 80% を超えています。現在値: {{ index $values "Usage ratio" }}'
+                        summary: vCluster の ResourceQuota 使用率が 80% を超過
+                      labels:
+                        severity: warning
+                        team: platform
+                      isPaused: false
+                      notification_settings:
+                        receiver: grafana-default-email
+                - orgId: 1
+                  name: pipeline
+                  folder: OTEL Demo Alerts
+                  interval: 1m
+                  rules:
+                    - uid: efeanyit1cpa8b
+                      title: TelemetryPipelineDrop
+                      condition: Threshold
+                      data:
+                        - refId: TelemetryPipelineDrop
+                          relativeTimeRange:
+                            from: 600
+                            to: 0
+                          datasourceUid: prometheus
+                          model:
+                            editorMode: code
+                            expr: |-
+                              sum(rate(otelcol_exporter_send_failed_spans_total[5m]))
+                              +
+                              sum(rate(otelcol_exporter_send_failed_log_records_total[5m]))
+                              +
+                              sum(rate(otelcol_exporter_send_failed_metric_points_total[5m]))
+                            instant: true
+                            intervalMs: 1000
+                            legendFormat: __auto
+                            maxDataPoints: 43200
+                            range: false
+                            refId: TelemetryPipelineDrop
+                        - refId: Threshold
+                          datasourceUid: __expr__
+                          model:
+                            conditions:
+                              - evaluator:
+                                  params:
+                                    - 0
+                                  type: gt
+                                operator:
+                                  type: and
+                                query:
+                                  params:
+                                    - C
+                                reducer:
+                                  params: []
+                                  type: last
+                                type: query
+                            datasource:
+                              type: __expr__
+                              uid: __expr__
+                            expression: TelemetryPipelineDrop
+                            intervalMs: 1000
+                            maxDataPoints: 43200
+                            refId: Threshold
+                            type: threshold
+                      noDataState: NoData
+                      execErrState: Error
+                      for: 3m
+                      annotations:
+                        description: 'OTel Collector でのデータ送信失敗が検出されました。送信失敗レート: {{ index $values "TelemetryPipelineDrop" }}/s'
+                        summary: テレメトリパイプラインでデータドロップが発生
+                      labels:
+                        severity: warning
+                        team: platform
+                      isPaused: false
+                      notification_settings:
+                        receiver: grafana-default-email
+                - orgId: 1
+                  name: service-health
+                  folder: OTEL Demo Alerts
+                  interval: 5m
+                  rules:
+                    - uid: cfe7nq781h43kd
+                      title: HighErrorRate
+                      condition: Threshold
+                      data:
+                        - refId: Total requests
+                          relativeTimeRange:
+                            from: 600
+                            to: 0
+                          datasourceUid: prometheus
+                          model:
+                            editorMode: code
+                            expr: |-
+                              sum by (service_name) (
+                                rate(traces_span_metrics_calls_total{span_kind="SPAN_KIND_SERVER"}[5m])
+                              )
+                            instant: true
+                            intervalMs: 1000
+                            legendFormat: __auto
+                            maxDataPoints: 43200
+                            range: false
+                            refId: Total requests
+                        - refId: Error requests
+                          relativeTimeRange:
+                            from: 600
+                            to: 0
+                          datasourceUid: prometheus
+                          model:
+                            datasource:
+                              type: prometheus
+                              uid: prometheus
+                            editorMode: code
+                            expr: |-
+                              sum by (service_name) (
+                                rate(traces_span_metrics_calls_total{
+                                  span_kind="SPAN_KIND_SERVER",
+                                  status_code="STATUS_CODE_ERROR"
+                                }[5m])
+                              )
+                            instant: true
+                            intervalMs: 1000
+                            legendFormat: __auto
+                            maxDataPoints: 43200
+                            range: false
+                            refId: Error requests
+                        - refId: Error Rate
+                          datasourceUid: __expr__
+                          model:
+                            conditions:
+                              - evaluator:
+                                  params:
+                                    - 0
+                                    - 0
+                                  type: gt
+                                operator:
+                                  type: and
+                                query:
+                                  params: []
+                                reducer:
+                                  params: []
+                                  type: avg
+                                type: query
+                            datasource:
+                              name: Expression
+                              type: __expr__
+                              uid: __expr__
+                            expression: (${Error requests} / ${Total requests}) * 100
+                            intervalMs: 1000
+                            maxDataPoints: 43200
+                            refId: Error Rate
+                            type: math
+                        - refId: Threshold
+                          datasourceUid: __expr__
+                          model:
+                            conditions:
+                              - evaluator:
+                                  params:
+                                    - 5
+                                    - 0
+                                  type: gt
+                                operator:
+                                  type: and
+                                query:
+                                  params: []
+                                reducer:
+                                  params: []
+                                  type: avg
+                                type: query
+                            datasource:
+                              name: Expression
+                              type: __expr__
+                              uid: __expr__
+                            expression: Error Rate
+                            intervalMs: 1000
+                            maxDataPoints: 43200
+                            refId: Threshold
+                            type: threshold
+                      noDataState: NoData
+                      execErrState: Error
+                      for: 5m
+                      annotations:
+                        description: 'サービス {{ $labels.service_name }} のエラーレートが閾値 5% を超えています。現在値: {{ index $values "Error Rate" }}%'
+                        summary: '{{ $labels.service_name }} のエラーレートが {{ index $values "Error Rate" }}% を超過'
+                      labels:
+                        severity: critical
+                        team: platform
+                      isPaused: false
+                      notification_settings:
+                        receiver: grafana-default-email
+                    - uid: afeamdyr3vchsf
+                      title: HighLatencyP99
+                      condition: Threshold
+                      data:
+                        - refId: HighLatencyP99
+                          relativeTimeRange:
+                            from: 600
+                            to: 0
+                          datasourceUid: prometheus
+                          model:
+                            editorMode: code
+                            expr: |
+                              histogram_quantile(0.99,
+                                sum by (service_name, le) (
+                                  rate(traces_span_metrics_duration_milliseconds_bucket{
+                                    span_kind="SPAN_KIND_SERVER",
+                                    service_name!~"flagd|image-provider"
+                                  }[5m])
+                                )
+                              )
+                            instant: true
+                            intervalMs: 1000
+                            legendFormat: __auto
+                            maxDataPoints: 43200
+                            range: false
+                            refId: HighLatencyP99
+                        - refId: Threshold
+                          datasourceUid: __expr__
+                          model:
+                            conditions:
+                              - evaluator:
+                                  params:
+                                    - 2000
+                                  type: gt
+                                operator:
+                                  type: and
+                                query:
+                                  params:
+                                    - C
+                                reducer:
+                                  params: []
+                                  type: last
+                                type: query
+                                unloadEvaluator:
+                                  params:
+                                    - 2000
+                                  type: lt
+                            datasource:
+                              type: __expr__
+                              uid: __expr__
+                            expression: HighLatencyP99
+                            intervalMs: 1000
+                            maxDataPoints: 43200
+                            refId: Threshold
+                            type: threshold
+                      noDataState: NoData
+                      execErrState: Error
+                      for: 5m
+                      annotations:
+                        description: 'サービス {{ $labels.service_name }} の P99 レイテンシが閾値 2000ms を超えています。現在値: {{ index $values "HighLatencyP99" }}ms'
+                        summary: '{{ $labels.service_name }} の P99 レイテンシが 2s を超過'
+                      labels:
+                        severity: warning
+                        team: platform
+                      isPaused: false
+                      notification_settings:
+                        receiver: grafana-default-email
+                    - uid: ffean7ocv4u0wc
+                      title: ServiceDown
+                      condition: Threshold
+                      data:
+                        - refId: ServiceDown
+                          relativeTimeRange:
+                            from: 600
+                            to: 0
+                          datasourceUid: prometheus
+                          model:
+                            editorMode: code
+                            expr: |
+                              sum by (service_name) (
+                                rate(traces_span_metrics_calls_total{
+                                  span_kind="SPAN_KIND_SERVER",
+                                  status_code!="STATUS_CODE_ERROR",
+                                  service_name!="image-provider"
+                                }[3m])
+                              )
+                            instant: true
+                            intervalMs: 1000
+                            legendFormat: __auto
+                            maxDataPoints: 43200
+                            range: false
+                            refId: ServiceDown
+                        - refId: Threshold
+                          datasourceUid: __expr__
+                          model:
+                            conditions:
+                              - evaluator:
+                                  params:
+                                    - 0.001
+                                  type: lt
+                                operator:
+                                  type: and
+                                query:
+                                  params:
+                                    - C
+                                reducer:
+                                  params: []
+                                  type: last
+                                type: query
+                            datasource:
+                              type: __expr__
+                              uid: __expr__
+                            expression: ServiceDown
+                            intervalMs: 1000
+                            maxDataPoints: 43200
+                            refId: Threshold
+                            type: threshold
+                      noDataState: NoData
+                      execErrState: Error
+                      for: 5m
+                      annotations:
+                        description: サービス {{ $labels.service_name }} の直近 3 分間の成功リクエストレートがほぼ 0 です
+                        summary: '{{ $labels.service_name }} がダウンしている可能性'
+                      labels:
+                        severity: critical
+                        team: platform
+                      isPaused: false
+                      notification_settings:
+                        receiver: grafana-default-email
+                    - uid: afeanp3qejmrke
+                      title: PodOOMKillRisk
+                      condition: Threshold
+                      data:
+                        - refId: Memory usage
+                          relativeTimeRange:
+                            from: 600
+                            to: 0
+                          datasourceUid: prometheus
+                          model:
+                            editorMode: code
+                            expr: |-
+                              sum by (pod) (
+                                container_memory_working_set_bytes{
+                                  namespace="vcluster-otel-demo",
+                                  container!="",
+                                  container!="POD"
+                                }
+                              )
+                            instant: true
+                            intervalMs: 1000
+                            legendFormat: __auto
+                            maxDataPoints: 43200
+                            range: false
+                            refId: Memory usage
+                        - refId: Memory limit
+                          relativeTimeRange:
+                            from: 600
+                            to: 0
+                          datasourceUid: prometheus
+                          model:
+                            datasource:
+                              type: prometheus
+                              uid: prometheus
+                            editorMode: code
+                            expr: |-
+                              sum by (pod) (
+                                kube_pod_container_resource_limits{
+                                  namespace="vcluster-otel-demo",
+                                  resource="memory"
+                                }
+                              )
+                            instant: true
+                            intervalMs: 1000
+                            legendFormat: __auto
+                            maxDataPoints: 43200
+                            range: false
+                            refId: Memory limit
+                        - refId: Usage ratio = A / B
+                          datasourceUid: __expr__
+                          model:
+                            conditions:
+                              - evaluator:
+                                  params:
+                                    - 0
+                                    - 0
+                                  type: gt
+                                operator:
+                                  type: and
+                                query:
+                                  params: []
+                                reducer:
+                                  params: []
+                                  type: avg
+                                type: query
+                            datasource:
+                              name: Expression
+                              type: __expr__
+                              uid: __expr__
+                            expression: ${Memory usage} / ${Memory limit}
+                            intervalMs: 1000
+                            maxDataPoints: 43200
+                            refId: Usage ratio = A / B
+                            type: math
+                        - refId: Threshold
+                          datasourceUid: __expr__
+                          model:
+                            conditions:
+                              - evaluator:
+                                  params:
+                                    - 0.9
+                                    - 0
+                                  type: gt
+                                operator:
+                                  type: and
+                                query:
+                                  params: []
+                                reducer:
+                                  params: []
+                                  type: avg
+                                type: query
+                            datasource:
+                              name: Expression
+                              type: __expr__
+                              uid: __expr__
+                            expression: Usage ratio = A / B
+                            intervalMs: 1000
+                            maxDataPoints: 43200
+                            refId: Threshold
+                            type: threshold
+                      noDataState: NoData
+                      execErrState: Error
+                      for: 5m
+                      annotations:
+                        description: 'Pod {{ $labels.pod }} のメモリ使用率が limit の 90% を超えています。現在値: {{ index $values "Usage ratio = A / B" }}'
+                        summary: Pod {{ $labels.pod }} が OOM Kill のリスク
+                      labels:
+                        severity: warning
+                        team: platform
+                      isPaused: false
+                      notification_settings:
+                        receiver: grafana-default-email
+
       # Prometheus Operator 設定
       - prometheusOperator:
           enabled: true
