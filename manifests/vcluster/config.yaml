@@ -85,6 +85,13 @@ policies:
   podSecurityStandard: baseline
 
   # vCluster 全体のリソース上限
+  # OTel Demo (20+ サービス) + vCluster コントロールプレーンの合計使用量を実測し設定。
+  # requests.cpu/memory: 実際の要求量の合計に余裕を持たせた値。
+  # limits.cpu/memory: スパイク時のバースト上限。vClusterQuotaExhaustion アラート (>80%) の
+  #   発火を意図的に発生させないよう、通常負荷の約 2 倍を確保している。
+  # count/services: 50 は OTel Demo の全 Service 数 (~30) に対して余裕を持たせた値。
+  # count/endpoints: 60 は 1 Service あたり複数 EndpointSlice が生成されるケースを考慮した値。
+  # count/pods: 50 は OTel Demo の全 Pod 数 (~30) に余裕を持たせた値。
   resourceQuota:
     enabled: true
     quota:

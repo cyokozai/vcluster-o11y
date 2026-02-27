@@ -1,3 +1,7 @@
+# アラートルールの編集はこのファイルを変更してください。
+# manifests/monitoring/grafana-alert-rules.yaml は Kubernetes の ConfigMap としてデプロイされる派生ファイルであり、
+# Grafana の sidecar がこの ConfigMap を読み込みます。
+# このファイル (grafana/alert-rules.yaml) が変更の source of truth です。
 apiVersion: 1
 groups:
   - orgId: 1
