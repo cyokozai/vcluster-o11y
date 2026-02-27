@@ -72,8 +72,8 @@ releases:
             quota:
               requests.cpu: "2"
               requests.memory: "8Gi"
-              limits.cpu: "4"
-              limits.memory: "24Gi"
+              limits.cpu: "96"
+              limits.memory: "64Gi"
         integrations:
           metricsServer:
             enabled: false
