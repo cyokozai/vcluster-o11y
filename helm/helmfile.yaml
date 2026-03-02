@@ -244,6 +244,14 @@ releases:
       # Grafana 設定
       - grafana:
           additionalDataSources:
+            - name: Prometheus
+              type: prometheus
+              uid: prometheus
+              url: http://kube-prometheus-stack-prometheus.monitoring:9090
+              access: proxy
+              isDefault: true
+              jsonData:
+                httpMethod: POST
             - name: Tempo
               type: tempo
               uid: tempo
