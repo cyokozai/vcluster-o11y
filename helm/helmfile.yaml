@@ -315,6 +315,8 @@ releases:
             scrapeInterval: "15s"
             evaluationInterval: "15s"
             enableRemoteWriteReceiver: true
+            tsdbSpec:
+              outOfOrderTimeWindow: 20s
             serviceMonitorSelectorNilUsesHelmValues: false
             serviceMonitorSelector: {}
             serviceMonitorNamespaceSelector: {}
