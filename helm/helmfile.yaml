@@ -243,20 +243,6 @@ releases:
     values:
       # Grafana 設定
       - grafana:
-          # kube-prometheus-stack が自動生成する Prometheus データソースの UID が
-          # ダッシュボード JSON の "uid": "prometheus" と一致しないため明示的に上書き
-          datasources:
-            datasources.yaml:
-              apiVersion: 1
-              datasources:
-                - name: Prometheus
-                  type: prometheus
-                  uid: prometheus
-                  url: http://kube-prometheus-stack-prometheus.monitoring:9090
-                  access: proxy
-                  isDefault: true
-                  jsonData:
-                    httpMethod: POST
           additionalDataSources:
             - name: Tempo
               type: tempo
@@ -316,7 +302,7 @@ releases:
             evaluationInterval: "15s"
             enableRemoteWriteReceiver: true
             tsdbSpec:
-              outOfOrderTimeWindow: 20s
+              outOfOrderTimeWindow: 1m
             serviceMonitorSelectorNilUsesHelmValues: false
             serviceMonitorSelector: {}
             serviceMonitorNamespaceSelector: {}
