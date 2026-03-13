@@ -168,7 +168,7 @@ releases:
   - name: alloy
     namespace: monitoring
     chart: grafana/alloy
-    version: "0.6.2"
+    version: "1.6.1"
     values:
       - alloy:
           extraPorts:

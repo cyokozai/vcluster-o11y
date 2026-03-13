@@ -47,7 +47,7 @@ data:
                         type: and
                       query:
                         params:
-                          - C
+                          - Storage Near Full
                       reducer:
                         params: []
                         type: last
@@ -174,7 +174,7 @@ data:
                         type: and
                       query:
                         params:
-                          - C
+                          - TelemetryPipelineDrop
                       reducer:
                         params: []
                         type: last
@@ -350,7 +350,7 @@ data:
                         type: and
                       query:
                         params:
-                          - C
+                          - HighLatencyP99
                       reducer:
                         params: []
                         type: last
@@ -416,7 +416,7 @@ data:
                         type: and
                       query:
                         params:
-                          - C
+                          - ServiceDown
                       reducer:
                         params: []
                         type: last
