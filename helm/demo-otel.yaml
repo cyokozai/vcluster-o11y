@@ -14,7 +14,7 @@ releases:
   - name: otel-demo
     namespace: otel-demo
     chart: open-telemetry/opentelemetry-demo
-    version: "0.40.1"
+    version: "0.40.5"
     createNamespace: true
     values: # ホスト側を使用するためデフォルトの監視コンポーネントは無効化
       - jaeger:
@@ -117,11 +117,11 @@ releases:
             resources:
               limits:
                 cpu: 2000m
-                memory: 150Mi
+                memory: 300Mi
                 ephemeral-storage: "500Mi"
               requests:
                 cpu: 50m
-                memory: 120Mi
+                memory: 200Mi
                 ephemeral-storage: "50Mi"
 
           ad:
@@ -281,6 +281,17 @@ releases:
               requests:
                 cpu: 50m
                 memory: 64Mi
+                ephemeral-storage: "50Mi"
+
+          valkey-cart:
+            resources:
+              limits:
+                cpu: 500m
+                memory: 256Mi
+                ephemeral-storage: "500Mi"
+              requests:
+                cpu: 50m
+                memory: 128Mi
                 ephemeral-storage: "50Mi"
 
           postgresql:
