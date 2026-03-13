@@ -6,7 +6,7 @@
 | --- | --- |
 | 実施日 | |
 | 実施者 | |
-| vCluster バージョン | OTel Demo 2.2.0 |
+| OTel Demo バージョン | OTel Demo 2.2.0 |
 | Grafana URL | http://localhost:3000 |
 | flagd-ui URL | http://localhost:8080/feature |
 
