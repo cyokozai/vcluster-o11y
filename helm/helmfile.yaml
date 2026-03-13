@@ -241,11 +241,8 @@ releases:
     version: "82.10.1"
     createNamespace: true
     values:
-      # Grafana 設定
+      # Grafana 設定 (datasource と ServiceMonitor のみ)
       - grafana:
-          # 全データソースを1ファイルで管理し、チャート生成の datasource.yaml との競合を防ぐ。
-          # additionalDataSources は datasource.yaml に追記されるため、datasources.yaml と
-          # Prometheus/Alertmanager が重複し Tempo/Loki が Grafana に登録されない問題を回避。
           datasources:
             datasources.yaml:
               apiVersion: 1
