@@ -4,11 +4,11 @@
 
 | コンポーネント | Chart | バージョン | Namespace |
 | --- | --- | --- | --- |
-| **Alloy** | grafana/alloy | 0.5.0 | monitoring |
-| **Tempo** | grafana/tempo | 1.24.3 | monitoring |
-| **Loki** | grafana/loki | 6.52.0 | monitoring |
-| **kube-prometheus-stack** | prometheus-community/kube-prometheus-stack | 80.2.0 | monitoring |
-| **vCluster** | loft/vcluster | 0.30.4 | vcluster-system |
+| **Alloy** | grafana/alloy | 1.6.1 | monitoring |
+| **Tempo** | grafana/tempo | 1.24.4 | monitoring |
+| **Loki** | grafana/loki | 6.53.0 | monitoring |
+| **kube-prometheus-stack** | prometheus-community/kube-prometheus-stack | 82.10.1 | monitoring |
+| **vCluster** | loft/vcluster | 0.32.1 | vcluster-system |
 
 ## 検証
 
