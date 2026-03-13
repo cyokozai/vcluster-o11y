@@ -102,7 +102,7 @@ Expression D (Threshold):
 | 設定項目 | 値 |
 |---|---|
 | Evaluation group | `service-health`（「+ New evaluation group」で新規作成） |
-| Evaluation interval | `1m`（グループ作成時に設定。後から変更する場合は Alert rules 一覧でグループの編集アイコンをクリック） |
+| Evaluation interval | `5m`（グループ作成時に設定。後から変更する場合は Alert rules 一覧でグループの編集アイコンをクリック） |
 | Pending period | `5m`（Pending period は Evaluation interval 以上の値を設定すること） |
 
 **Section 6 - Configure notification message:**
@@ -131,7 +131,10 @@ P99 レイテンシが 2 秒を超えた場合に発火する。
 ```promql
 histogram_quantile(0.99,
   sum by (service_name, le) (
-    rate(traces_span_metrics_duration_milliseconds_bucket{span_kind="SPAN_KIND_SERVER"}[5m])
+    rate(traces_span_metrics_duration_milliseconds_bucket{
+      span_kind="SPAN_KIND_SERVER",
+      service_name!~"flagd|image-provider"
+    }[5m])
   )
 )
 ```
@@ -187,12 +190,13 @@ histogram_quantile(0.99,
 sum by (service_name) (
   rate(traces_span_metrics_calls_total{
     span_kind="SPAN_KIND_SERVER",
-    status_code!="STATUS_CODE_ERROR"
+    status_code!="STATUS_CODE_ERROR",
+    service_name!="image-provider"
   }[3m])
 )
 ```
 
-> クエリのレンジ `[3m]` と Pending period `3m` を一致させている。
+> クエリのレンジ `[3m]` は Pending period `5m` より短く設定している。
 
 **Expression B (Threshold):**
 | 設定 | 値 |
@@ -225,8 +229,8 @@ Pod の Memory 使用率が limit の 90% を超えた場合に発火する。
 |---|---|
 | Rule name | `PodOOMKillRisk` |
 | Folder | `OTEL Demo Alerts` |
-| Group | `infrastructure` |
-| Evaluation interval | `1m` |
+| Group | `service-health` |
+| Evaluation interval | `5m`（service-health グループ共通） |
 | Pending period | `5m` |
 | Severity label | `warning` |
 
@@ -278,7 +282,7 @@ sum by (pod) (
 
 | 設定項目 | 値 |
 |---|---|
-| Evaluation group | `infrastructure` |
+| Evaluation group | `service-health` |
 | Pending period | `5m` |
 
 **Section 6 - Configure notification message:**
