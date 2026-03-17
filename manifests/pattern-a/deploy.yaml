@@ -58,6 +58,13 @@ spec:
       labels:
         app: otel-collector
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: otel-collector
           image: otel/opentelemetry-collector-contrib:0.120.0
@@ -70,6 +77,12 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/otel
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           resources:
             requests:
               cpu: 100m
@@ -116,6 +129,13 @@ spec:
         app: go-api-server
         pattern: "a"
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: go-api-server
           image: <ECR_REPO>/go-api-server:latest
@@ -128,6 +148,12 @@ spec:
               value: "go-api-server-pattern-a"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "otel-collector:4317"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           resources:
             requests:
               cpu: 100m

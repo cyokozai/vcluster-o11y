@@ -18,6 +18,13 @@ spec:
         app: go-api-server
         pattern: "b"
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: go-api-server
           image: <ECR_REPO>/go-api-server:latest
@@ -31,6 +38,12 @@ spec:
             # replicateServices で複製された Alloy Service に直接送信
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "alloy:4317"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           resources:
             requests:
               cpu: 100m
