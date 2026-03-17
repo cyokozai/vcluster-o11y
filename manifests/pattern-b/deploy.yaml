@@ -1,5 +1,5 @@
 # Pattern B: Go API Server (OTel SDK → Alloy 直接)
-# kubectl apply -f manifests/vcluster/pattern-b/
+# kubectl apply -f manifests/pattern-b/deploy.yaml
 ---
 apiVersion: apps/v1
 kind: Deployment

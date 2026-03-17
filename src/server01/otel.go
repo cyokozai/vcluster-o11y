@@ -73,6 +73,7 @@ func initOtel(ctx context.Context) (shutdown func(context.Context) error, err er
 	// WithBatcher: スパンをバッチで送信し、ネットワーク負荷を下げる
 	traceExporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithGRPCConn(conn))
 	if err != nil {
+		_ = conn.Close()
 		return nil, err
 	}
 	tp := sdktrace.NewTracerProvider(
@@ -85,6 +86,7 @@ func initOtel(ctx context.Context) (shutdown func(context.Context) error, err er
 	// NewPeriodicReader: 一定間隔 (デフォルト 60s) でメトリクスをエクスポートする
 	metricExporter, err := otlpmetricgrpc.New(ctx, otlpmetricgrpc.WithGRPCConn(conn))
 	if err != nil {
+		_ = conn.Close()
 		return nil, err
 	}
 	mp := sdkmetric.NewMeterProvider(
@@ -97,6 +99,7 @@ func initOtel(ctx context.Context) (shutdown func(context.Context) error, err er
 	// NewBatchProcessor: ログをバッチで送信する
 	logExporter, err := otlploggrpc.New(ctx, otlploggrpc.WithGRPCConn(conn))
 	if err != nil {
+		_ = conn.Close()
 		return nil, err
 	}
 	lp := sdklog.NewLoggerProvider(

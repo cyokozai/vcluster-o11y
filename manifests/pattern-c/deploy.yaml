@@ -1,6 +1,6 @@
 # Pattern C: Go API Server (OTel SDK なし、/metrics エンドポイントのみ)
 # Alloy がホスト側からスクレイプする
-# kubectl apply -f manifests/vcluster/pattern-c/
+# kubectl apply -f manifests/pattern-c/deploy.yaml
 ---
 apiVersion: apps/v1
 kind: Deployment

@@ -56,6 +56,12 @@ func initOtel(ctx context.Context) (shutdown func(context.Context) error, err er
 	if err != nil {
 		return nil, err
 	}
+	// exporter 初期化中にエラーが発生した場合、conn をCloseしてリークを防ぐ
+	defer func() {
+		if err != nil {
+			_ = conn.Close()
+		}
+	}()
 
 	res := newResource()
 

@@ -1,5 +1,5 @@
 # Pattern A: Go API Server + OTel Collector
-# kubectl apply -f manifests/vcluster/pattern-a/
+# kubectl apply -f manifests/pattern-a/deploy.yaml
 ---
 # OTel Collector ConfigMap
 apiVersion: v1

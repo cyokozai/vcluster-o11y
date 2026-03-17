@@ -52,7 +52,7 @@ var (
 
 	// httpRequestDuration: リクエスト処理時間の分布を計測する Histogram
 	// Grafana での PromQL 例:
-	//   histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))  → P99 レイテンシ
+	//   histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))  → P99 レイテンシ
 	httpRequestDuration = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "http_request_duration_seconds",
@@ -63,7 +63,7 @@ var (
 	)
 )
 
-// instrumentedHandler は各ハンドラをラップしてメトリクスを记录する。
+// instrumentedHandler は各ハンドラをラップしてメトリクスを記録する。
 // Pattern A/B の otelhttp.NewHandler に相当するが、Prometheus 版。
 func instrumentedHandler(path string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	// otelhttp: net/http を自動計装するミドルウェア
 	// リクエストごとに親スパンを生成し、ハンドラに Context を伝播する
@@ -29,8 +30,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to initialize OTel: %v", err)
 	}
-	// プロセス終了時にバッファされたテレメトリをフラッシュしてから閉じる
-	defer shutdown(context.Background())
+	// プロセス終了時にバッファされたテレメトリをフラッシュしてから閉じる。
+	// shutdown がハングしないように、タイムアウト付きの Context を使う。
+	defer func() {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := shutdown(shutdownCtx); err != nil {
+			log.Printf("failed to shutdown OTel SDK: %v", err)
+		}
+	}()
 
 	// ルーターの登録
 	mux := http.NewServeMux()
@@ -58,5 +66,10 @@ func main() {
 	// シグナルを受信するまでブロック
 	<-ctx.Done()
 	log.Println("shutting down server01...")
-	srv.Shutdown(context.Background())
+	// 一定時間でタイムアウトするコンテキストを使ってグレースフルシャットダウン
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Printf("server shutdown error: %v", err)
+	}
 }
