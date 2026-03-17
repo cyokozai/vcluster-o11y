@@ -1,0 +1,162 @@
+# Pattern A: Go API Server + OTel Collector
+# kubectl apply -f manifests/vcluster/pattern-a/
+---
+# OTel Collector ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: default
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:4317"
+          http:
+            endpoint: "0.0.0.0:4318"
+
+    processors:
+      batch:
+        timeout: 1s
+
+    exporters:
+      otlp:
+        endpoint: "alloy:4317"  # replicateServices で複製された Alloy Service
+        tls:
+          insecure: true
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [otlp]
+        metrics:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [otlp]
+        logs:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [otlp]
+---
+# OTel Collector Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+        - name: otel-collector
+          image: otel/opentelemetry-collector-contrib:0.120.0
+          args: ["--config=/etc/otel/config.yaml"]
+          ports:
+            - containerPort: 4317
+              name: otlp-grpc
+            - containerPort: 4318
+              name: otlp-http
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otel
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: config
+          configMap:
+            name: otel-collector-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: default
+spec:
+  selector:
+    app: otel-collector
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+---
+# Go API Server Deployment (Pattern A: OTel → OTel Collector)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-api-server
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-api-server
+      pattern: "a"
+  template:
+    metadata:
+      labels:
+        app: go-api-server
+        pattern: "a"
+    spec:
+      containers:
+        - name: go-api-server
+          image: <ECR_REPO>/go-api-server:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: OTEL_SERVICE_NAME
+              value: "go-api-server-pattern-a"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "otel-collector:4317"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-api-server
+  namespace: default
+spec:
+  selector:
+    app: go-api-server
+    pattern: "a"
+  ports:
+    - port: 8080
+      targetPort: 8080
