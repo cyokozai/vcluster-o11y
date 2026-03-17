@@ -11,32 +11,38 @@
 
 ## Step 1: Docker イメージのビルドと ECR へのプッシュ
 
-```bash
-cd apps/go-api-server
+各パターンはそれぞれ独立した Go モジュールとして `src/server01~03` に分割されています。
 
-# ECR リポジトリ URI を変数に保存
-export ECR_REPO="<AWS_ACCOUNT_ID>.dkr.ecr.ap-northeast-1.amazonaws.com/go-api-server"
+```bash
+# ECR リポジトリのベース URI を変数に保存
+export ECR_BASE="<AWS_ACCOUNT_ID>.dkr.ecr.ap-northeast-1.amazonaws.com"
 
 # ECR にログイン
 aws ecr get-login-password --region ap-northeast-1 \
-  | docker login --username AWS --password-stdin $ECR_REPO
+  | docker login --username AWS --password-stdin $ECR_BASE
 
-# イメージをビルド (go mod tidy はコンテナ内で実行される)
-docker build -t go-api-server:latest .
+# Pattern A (server01): OTel SDK → OTel Collector
+docker build --load -t ${ECR_BASE}/server01:latest src/server01/
+docker push ${ECR_BASE}/server01:latest
 
-# ECR にプッシュ
-docker tag go-api-server:latest ${ECR_REPO}:latest
-docker push ${ECR_REPO}:latest
+# Pattern B (server02): OTel SDK → Alloy 直接
+docker build --load -t ${ECR_BASE}/server02:latest src/server02/
+docker push ${ECR_BASE}/server02:latest
+
+# Pattern C (server03): Prometheus scrape のみ
+docker build --load -t ${ECR_BASE}/server03:latest src/server03/
+docker push ${ECR_BASE}/server03:latest
 ```
 
 > **Note**: `docker build` の `dev` ステージで `go mod tidy` と `go build` がコンテナ内で自動実行されます。
 
-マニフェストの `<ECR_REPO>` を実際の URI に置換します。
+マニフェストのイメージ参照を実際の URI に置換します。
 
 ```bash
-export ECR_REPO="<実際のECR URI>"
-find manifests/vcluster/pattern-{a,b,c} -name "*.yaml" \
-  -exec sed -i "" "s|<ECR_REPO>|${ECR_REPO}|g" {} \;
+export ECR_BASE="<実際のECR Base URI>"
+sed -i "" "s|<ECR_REPO>/go-api-server|${ECR_BASE}/server01|" manifests/vcluster/pattern-a/deploy.yaml
+sed -i "" "s|<ECR_REPO>/go-api-server|${ECR_BASE}/server02|" manifests/vcluster/pattern-b/deploy.yaml
+sed -i "" "s|<ECR_REPO>/go-api-server|${ECR_BASE}/server03|" manifests/vcluster/pattern-c/deploy.yaml
 ```
 
 ---
