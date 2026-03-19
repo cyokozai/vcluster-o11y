@@ -2,7 +2,7 @@
 
 ## 1. アラートルール一覧
 
-[grafana/alert-rules.yaml](../grafana/alert-rules.yaml) に定義された 7 つのアラートルール。
+[manifests/monitoring/grafana-alert-rules.yaml](../manifests/monitoring/grafana-alert-rules.yaml) に定義された 7 つのアラートルール。
 
 | # | アラート名 | グループ | 評価間隔 | 条件 | `for` | 重要度 | 備考 |
 |---|---|---|---|---|---|---|---|

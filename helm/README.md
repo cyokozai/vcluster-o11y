@@ -61,7 +61,13 @@
     kubectl apply -f manifests/monitoring/grafana-alert-rules.yaml
     ```
 
-    > `grafana.sidecar.alerts` が ConfigMap を検知し、Grafana に自動ロードされる
+1. Grafana ダッシュボードを適用
+
+    ```bash
+    kubectl apply -f manifests/monitoring/grafana-dashboards.yaml
+    ```
+
+    > `grafana.sidecar.dashboards` が ConfigMap を検知し、Grafana に自動ロードされる
 
 ### 2. 仮想クラスタの構築とデモアプリのデプロイ
 

@@ -185,7 +185,7 @@ kubectl port-forward svc/flagd-ui 8080:8080 -n otel-demo
 1. Grafana で新規ダッシュボード「Service Overview」を作成
 2. SpanMetrics ベースのパネルを追加 (エラーレート、レイテンシ、リクエストレート)
 3. Tempo の Node Graph (サービスマップ) を追加
-4. ダッシュボード JSON をエクスポートし `grafana/` に保存
+4. ダッシュボード JSON をエクスポートし ConfigMap (`manifests/monitoring/grafana-dashboards.yaml` 等) に保存
 
 ### Step 3: アラートルールを設定
 

@@ -456,8 +456,4 @@ sum(rate(otelcol_receiver_refused_spans_total[5m]))
 ## ダッシュボード完成後の作業
 
 1. 各ダッシュボードを作成したら **Dashboard Settings > JSON Model** から JSON をコピー
-2. `grafana/` ディレクトリに保存:
-   - `grafana/service-overview.json`
-   - `grafana/red-metrics.json`
-   - `grafana/infrastructure.json`
-   - `grafana/telemetry-pipeline.json`
+2. `manifests/monitoring/grafana-dashboards.yaml` 等の ConfigMap リソースとして組み込んで保存します。
