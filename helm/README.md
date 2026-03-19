@@ -65,6 +65,10 @@
 
 ### 2. 仮想クラスタの構築とデモアプリのデプロイ
 
+実施する検証内容（検証1 または 検証2）に合わせて、以下のいずれかの手順で仮想クラスタを構築・アプリをデプロイしてください。
+
+#### 検証1: OTel Demo を用いたテレメトリパイプラインの動作検証 の場合
+
 1. 仮想クラスタを作成
 
     ```bash
@@ -80,6 +84,48 @@
 
     ```bash
     helmfile sync -f helm/demo-otel.yaml
+    ```
+
+#### 検証2: 複数 vCluster の一元監視 の場合
+
+1. 3つの仮想クラスタ (`vcluster-1`, `vcluster-2`, `vcluster-3`) を作成
+
+    ```bash
+    # vcluster-1 (Pattern A)
+    kubectl create namespace vcluster-1
+    vcluster create vcluster-1 -n vcluster-1
+
+    # vcluster-2 (Pattern B)
+    kubectl create namespace vcluster-2
+    vcluster create vcluster-2 -n vcluster-2
+
+    # vcluster-3 (Pattern C)
+    kubectl create namespace vcluster-3
+    vcluster create vcluster-3 -n vcluster-3
+    ```
+
+    > クラスタ作成後、kubectl のコンテキストが自動で直近に作成した仮想クラスタに切り替わります。
+
+1. 各仮想クラスタへアプリをデプロイ
+
+    コンテナイメージのビルドとプッシュが完了していることを前提としています。
+
+    ```bash
+    # Pattern A のデプロイ (vcluster-1)
+    vcluster connect vcluster-1 -n vcluster-1
+    kubectl apply -f manifests/vcluster/pattern-a/otel-collector.yaml
+    kubectl apply -f manifests/vcluster/pattern-a/api-server.yaml
+    vcluster disconnect
+
+    # Pattern B のデプロイ (vcluster-2)
+    vcluster connect vcluster-2 -n vcluster-2
+    kubectl apply -f manifests/vcluster/pattern-b/api-server.yaml
+    vcluster disconnect
+
+    # Pattern C のデプロイ (vcluster-3)
+    vcluster connect vcluster-3 -n vcluster-3
+    kubectl apply -f manifests/vcluster/pattern-c/api-server.yaml
+    vcluster disconnect
     ```
 
 ## Usage
@@ -115,6 +161,14 @@
 ## Uninstall
 
 ```bash
+# ホストクラスタの監視スタックを削除
 helmfile destroy -f helm/helmfile.yaml
+
+# 検証1の仮想クラスタを削除する場合
 vcluster delete otel-demo --namespace vcluster-otel-demo
+
+# 検証2の仮想クラスタを削除する場合
+vcluster delete vcluster-1 --namespace vcluster-1
+vcluster delete vcluster-2 --namespace vcluster-2
+vcluster delete vcluster-3 --namespace vcluster-3
 ```

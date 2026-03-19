@@ -70,8 +70,6 @@ data:
               severity: warning
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email
           - uid: cfeaow5kmjjlsc
             title: vClusterQuotaExhaustion
             condition: Threshold
@@ -132,8 +130,6 @@ data:
               severity: warning
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email
       - orgId: 1
         name: pipeline
         folder: OTEL Demo Alerts
@@ -197,8 +193,6 @@ data:
               severity: warning
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email
       - orgId: 1
         name: service-health
         folder: OTEL Demo Alerts
@@ -310,8 +304,6 @@ data:
               severity: critical
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email
           - uid: afeamdyr3vchsf
             title: HighLatencyP99
             condition: Threshold
@@ -377,8 +369,6 @@ data:
               severity: warning
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email
           - uid: ffean7ocv4u0wc
             title: ServiceDown
             condition: Threshold
@@ -439,8 +429,6 @@ data:
               severity: critical
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email
           - uid: afeanp3qejmrke
             title: PodOOMKillRisk
             condition: Threshold
@@ -551,5 +539,3 @@ data:
               severity: warning
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email
