@@ -1,3 +1,9 @@
+// Pattern B: メインエントリポイント
+//
+// Pattern A と構造は同一。
+// OTel SDK の向き先が OTel Collector ではなく Alloy になる点だけが異なる。
+// OTel Collector を省略することで仮想クラスタ内のリソースを節約できる。
+
 package main
 
 import (
@@ -25,19 +31,20 @@ func main() {
 	mux.HandleFunc("/", handleRoot)
 	mux.HandleFunc("/health", handleHealth)
 
-	handler := otelhttp.NewHandler(mux, "go-api-server")
+	handler := otelhttp.NewHandler(mux, "server02")
 
 	port := getEnv("PORT", "8080")
 	srv := &http.Server{Addr: ":" + port, Handler: handler}
 
 	go func() {
-		log.Printf("server listening on :%s", port)
+		log.Printf("[Pattern B] server02 listening on :%s → Alloy at %s",
+			port, getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", "alloy:4317"))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("server error: %v", err)
 		}
 	}()
 
 	<-ctx.Done()
-	log.Println("shutting down...")
+	log.Println("shutting down server02...")
 	srv.Shutdown(context.Background())
 }

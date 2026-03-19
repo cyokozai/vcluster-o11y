@@ -1,0 +1,85 @@
+# Pattern C: Go API Server (OTel SDK なし、/metrics エンドポイントのみ)
+# Alloy がホスト側からスクレイプする
+# kubectl apply -f manifests/pattern-c/deploy.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-api-server
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-api-server
+      pattern: "c"
+  template:
+    metadata:
+      labels:
+        app: go-api-server
+        pattern: "c"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: go-api-server
+          image: <ECR_REPO>/go-api-server:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            # PATTERN=C で OTel SDK を無効化し /metrics のみ提供
+            - name: PATTERN
+              value: "C"
+            - name: OTEL_SERVICE_NAME
+              value: "go-api-server-pattern-c"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+# Service に prometheus.io/scrape アノテーションを付与
+# (ホストクラスタの Alloy が toHost で複製されたこの Service を自動検出する)
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-api-server
+  namespace: default
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/metrics"
+spec:
+  selector:
+    app: go-api-server
+    pattern: "c"
+  ports:
+    - port: 8080
+      targetPort: 8080

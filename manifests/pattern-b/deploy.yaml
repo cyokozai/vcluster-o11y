@@ -1,0 +1,78 @@
+# Pattern B: Go API Server (OTel SDK → Alloy 直接)
+# kubectl apply -f manifests/pattern-b/deploy.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-api-server
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-api-server
+      pattern: "b"
+  template:
+    metadata:
+      labels:
+        app: go-api-server
+        pattern: "b"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: go-api-server
+          image: <ECR_REPO>/go-api-server:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: OTEL_SERVICE_NAME
+              value: "go-api-server-pattern-b"
+            # replicateServices で複製された Alloy Service に直接送信
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "alloy:4317"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-api-server
+  namespace: default
+spec:
+  selector:
+    app: go-api-server
+    pattern: "b"
+  ports:
+    - port: 8080
+      targetPort: 8080
