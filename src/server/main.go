@@ -1,4 +1,3 @@
-// Pattern B: メインエントリポイント
 package main
 
 import (
@@ -23,14 +22,14 @@ func main() {
 	srv := &http.Server{Addr: ":" + port, Handler: mux}
 
 	go func() {
-		log.Printf("[Pattern B] server02 listening on :%s", port)
+		log.Printf("go-api-server listening on :%s", port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("server error: %v", err)
 		}
 	}()
 
 	<-ctx.Done()
-	log.Println("shutting down server02...")
+	log.Println("shutting down...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(shutdownCtx); err != nil {
