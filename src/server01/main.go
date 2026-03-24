@@ -1,9 +1,4 @@
 // Pattern A: メインエントリポイント
-//
-// Beyla (eBPF) 自動計装への移行後。
-// OTel SDK を除去し、純粋な Go HTTP サーバーとして動作する。
-// トレース・メトリクスの収集は Beyla DaemonSet がカーネルレベルで担う。
-
 package main
 
 import (

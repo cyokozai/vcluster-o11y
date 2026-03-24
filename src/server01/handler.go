@@ -1,8 +1,4 @@
 // Pattern A: HTTP ハンドラ
-//
-// OTel SDK の手動計装を除去した純粋なビジネスロジック実装。
-// トレース・メトリクスは Beyla (eBPF) が自動で収集する。
-
 package main
 
 import (

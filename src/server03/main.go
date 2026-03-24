@@ -1,11 +1,4 @@
 // Pattern C: Beyla (eBPF) 自動計装への移行後
-//
-// 変更前: Prometheus クライアントで /metrics を公開し Alloy が Pull scrape
-// 変更後: Beyla DaemonSet が HTTP メトリクスを eBPF で自動収集し Alloy へ Push
-//
-// Prometheus クライアント依存を完全に除去し、
-// アプリはビジネスロジックのみに集中できる。
-
 package main
 
 import (

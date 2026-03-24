@@ -1,15 +1,12 @@
 # Pattern C: Prometheus scrape のみ (OTel SDK なし)
 #
-# 依存が少ないため go mod tidy の実行が速く、ビルドが軽量。
-#
 # 使い方:
-#   docker build --target dev -t server03:dev .    # 開発環境
-#   docker build -t server03:latest .              # 本番イメージ
+#   docker build --target dev -t server03:dev .
+#   docker build -t server03:latest .
 #   docker run --rm -p 8080:8080 server03:latest
 #
 #   # /metrics が Prometheus 形式で返ることを確認
 #   curl http://localhost:8080/metrics
-
 FROM golang:1.26 AS dev
 
 WORKDIR /app
