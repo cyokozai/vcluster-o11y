@@ -1,6 +1,8 @@
-# Pattern C: Go API Server (OTel SDK なし、/metrics エンドポイントのみ)
-# Alloy がホスト側からスクレイプする
+# Pattern C: Go API Server (Beyla eBPF 自動計装)
 # kubectl apply -f manifests/pattern-c/deploy.yaml
+#
+# Prometheus クライアント除去に伴い、/metrics エンドポイントと scrape アノテーションを削除。
+# メトリクスは Beyla DaemonSet (ホストクラスタ) が eBPF で収集し Alloy へ送信する。
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -34,11 +36,6 @@ spec:
           env:
             - name: PORT
               value: "8080"
-            # PATTERN=C で OTel SDK を無効化し /metrics のみ提供
-            - name: PATTERN
-              value: "C"
-            - name: OTEL_SERVICE_NAME
-              value: "go-api-server-pattern-c"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -65,17 +62,11 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
 ---
-# Service に prometheus.io/scrape アノテーションを付与
-# (ホストクラスタの Alloy が toHost で複製されたこの Service を自動検出する)
 apiVersion: v1
 kind: Service
 metadata:
   name: go-api-server
   namespace: default
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "8080"
-    prometheus.io/path: "/metrics"
 spec:
   selector:
     app: go-api-server

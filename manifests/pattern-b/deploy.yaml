@@ -1,5 +1,8 @@
-# Pattern B: Go API Server (OTel SDK → Alloy 直接)
+# Pattern B: Go API Server (Beyla eBPF 自動計装)
 # kubectl apply -f manifests/pattern-b/deploy.yaml
+#
+# OTel SDK 除去に伴い、OTEL_* 環境変数も不要となった。
+# トレース・メトリクスは Beyla DaemonSet (ホストクラスタ) が収集し Alloy へ送信する。
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -33,11 +36,6 @@ spec:
           env:
             - name: PORT
               value: "8080"
-            - name: OTEL_SERVICE_NAME
-              value: "go-api-server-pattern-b"
-            # replicateServices で複製された Alloy Service に直接送信
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "alloy:4317"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
