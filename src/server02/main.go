@@ -1,8 +1,8 @@
 // Pattern B: メインエントリポイント
 //
-// Pattern A と構造は同一。
-// OTel SDK の向き先が OTel Collector ではなく Alloy になる点だけが異なる。
-// OTel Collector を省略することで仮想クラスタ内のリソースを節約できる。
+// Beyla (eBPF) 自動計装への移行後。
+// OTel SDK (Collector 経由なし) を除去し、純粋な Go HTTP サーバーとして動作する。
+// トレース・メトリクスの収集は Beyla DaemonSet がカーネルレベルで担う。
 
 package main
 
@@ -13,32 +13,22 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"time"
 )
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	shutdown, err := initOtel(ctx)
-	if err != nil {
-		log.Fatalf("failed to initialize OTel: %v", err)
-	}
-	defer shutdown(context.Background())
-
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handleRoot)
 	mux.HandleFunc("/health", handleHealth)
 
-	handler := otelhttp.NewHandler(mux, "server02")
-
 	port := getEnv("PORT", "8080")
-	srv := &http.Server{Addr: ":" + port, Handler: handler}
+	srv := &http.Server{Addr: ":" + port, Handler: mux}
 
 	go func() {
-		log.Printf("[Pattern B] server02 listening on :%s → Alloy at %s",
-			port, getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", "alloy:4317"))
+		log.Printf("[Pattern B] server02 listening on :%s", port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("server error: %v", err)
 		}
@@ -46,5 +36,16 @@ func main() {
 
 	<-ctx.Done()
 	log.Println("shutting down server02...")
-	srv.Shutdown(context.Background())
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Printf("server shutdown error: %v", err)
+	}
+}
+
+func getEnv(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }
