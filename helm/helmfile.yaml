@@ -361,3 +361,61 @@ releases:
                   - source_labels: [__meta_kubernetes_pod_label_app]
                     action: replace
                     target_label: job
+
+  # Beyla: eBPF ベースのゼロコード自動計装
+  # vCluster-1/2/3 の go-api-server (port 8080) を eBPF でインターセプトし
+  # OTLP traces/metrics を Alloy へ送信する
+  - name: beyla
+    namespace: monitoring
+    chart: grafana/beyla
+    version: "1.14.0"
+    values:
+      - preset: application
+        # port 8080 で待ち受けるプロセスを自動計装
+        # vcluster-1/2/3 の go-api-server のみを対象とする
+        # config.data はチャート内で YAML マップとして扱われるため
+        # ブロックスカラー (|) ではなくネストした YAML で記述する
+        config:
+          data:
+            # vcluster-1/2/3 の port 8080 のみを計装対象にする
+            discovery:
+              services:
+                - namespace: vcluster-1
+                  open_ports: "8080"
+                - namespace: vcluster-2
+                  open_ports: "8080"
+                - namespace: vcluster-3
+                  open_ports: "8080"
+            # k8s.namespace.name を metrics の datapoint attribute として付与する
+            # Alloy → Prometheus で k8s_namespace_name ラベルとして使用可能になる
+            attributes:
+              kubernetes:
+                enable: true
+              select:
+                http.server.request.duration:
+                  include:
+                    - http.request.method
+                    - http.response.status.code
+                    - url.path
+                    - k8s.namespace.name
+                    - k8s.deployment.name
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: "http://alloy.monitoring.svc.cluster.local:4317"
+          OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+          BEYLA_KUBE_METADATA_ENABLE: "autodetect"
+        # eBPF にはホスト PID 名前空間と特権アクセスが必要
+        podSecurityContext:
+          hostPID: true
+        securityContext:
+          privileged: true
+          runAsUser: 0
+        # 全ノードにスケジュールできるよう taint を無視する
+        tolerations:
+          - operator: Exists
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
