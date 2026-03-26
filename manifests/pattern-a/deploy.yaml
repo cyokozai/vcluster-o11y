@@ -1,8 +1,9 @@
-# Pattern A: Go API Server (Beyla eBPF 自動計装)
+# Pattern A: Go API Server (Beyla eBPF 自動計装を想定)
 # kubectl apply -f manifests/pattern-a/deploy.yaml
 #
-# OTel SDK 除去に伴い、仮想クラスタ内の OTel Collector も不要となった。
-# トレース・メトリクスは Beyla DaemonSet (ホストクラスタ) が収集し Alloy へ送信する。
+# OTel SDK 除去に伴い、仮想クラスタ内の OTel Collector は不要となった。
+# このマニフェスト単体ではトレース・メトリクスは収集されない。
+# トレース・メトリクスを取得するには、別途ホストクラスタ側に Beyla DaemonSet をデプロイし、Alloy への出力を設定する必要がある。
 ---
 apiVersion: apps/v1
 kind: Deployment

@@ -1,8 +1,9 @@
-# Pattern B: Go API Server (Beyla eBPF 自動計装)
+# Pattern B: Go API Server (Beyla eBPF 自動計装を想定・アプリ側マニフェストのみを提供)
 # kubectl apply -f manifests/pattern-b/deploy.yaml
 #
-# OTel SDK 除去に伴い、OTEL_* 環境変数も不要となった。
-# トレース・メトリクスは Beyla DaemonSet (ホストクラスタ) が収集し Alloy へ送信する。
+# このマニフェストでは OTel SDK を削除しているため、OTEL_* 環境変数の設定は不要となっている。
+# トレース・メトリクスは、別途クラスタ側にデプロイされた Beyla DaemonSet (ホストクラスタ) が収集し Alloy へ送信する前提である。
+# ※Beyla/Alloy のデプロイおよび出力設定は本リポジトリには含まれていないため、必要に応じて別途セットアップすること。
 ---
 apiVersion: apps/v1
 kind: Deployment

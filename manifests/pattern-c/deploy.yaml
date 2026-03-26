@@ -1,8 +1,9 @@
-# Pattern C: Go API Server (Beyla eBPF 自動計装)
+# Pattern C: Go API Server (Beyla eBPF 自動計装前提)
 # kubectl apply -f manifests/pattern-c/deploy.yaml
 #
 # Prometheus クライアント除去に伴い、/metrics エンドポイントと scrape アノテーションを削除。
-# メトリクスは Beyla DaemonSet (ホストクラスタ) が eBPF で収集し Alloy へ送信する。
+# このマニフェスト単体ではメトリクスは公開されず、Beyla DaemonSet/Helm リリースおよび Alloy への出力設定は別途ホストクラスタ側にデプロイする必要がある。
+# Beyla は eBPF により本 Pod のトラフィック等を自動計装し、収集したメトリクスを Alloy などのテレメトリ基盤へ送信する想定。
 ---
 apiVersion: apps/v1
 kind: Deployment

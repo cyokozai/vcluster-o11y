@@ -119,18 +119,17 @@
     ```bash
     # Pattern A のデプロイ (vcluster-1)
     vcluster connect vcluster-1 -n vcluster-1
-    kubectl apply -f manifests/vcluster/pattern-a/otel-collector.yaml
-    kubectl apply -f manifests/vcluster/pattern-a/api-server.yaml
+    kubectl apply -f manifests/pattern-a/deploy.yaml
     vcluster disconnect
 
     # Pattern B のデプロイ (vcluster-2)
     vcluster connect vcluster-2 -n vcluster-2
-    kubectl apply -f manifests/vcluster/pattern-b/api-server.yaml
+    kubectl apply -f manifests/pattern-b/deploy.yaml
     vcluster disconnect
 
     # Pattern C のデプロイ (vcluster-3)
     vcluster connect vcluster-3 -n vcluster-3
-    kubectl apply -f manifests/vcluster/pattern-c/api-server.yaml
+    kubectl apply -f manifests/pattern-c/deploy.yaml
     vcluster disconnect
     ```
 
