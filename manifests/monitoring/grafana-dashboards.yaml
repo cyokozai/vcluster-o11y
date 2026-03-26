@@ -3039,7 +3039,7 @@ data:
       "time": {"from": "now-15m", "to": "now"},
       "timepicker": {},
       "timezone": "browser",
-      "title": "go-api-server - 計装パターン比較",
+      "title": "go-api-server",
       "uid": "go-api-server-comparison",
       "version": 3
     }
