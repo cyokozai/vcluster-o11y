@@ -379,7 +379,7 @@ releases:
           data:
             # vcluster-1/2/3 の port 8080 のみを計装対象にする
             discovery:
-              services:
+              instrument:
                 - namespace: vcluster-1
                   open_ports: "8080"
                 - namespace: vcluster-2
