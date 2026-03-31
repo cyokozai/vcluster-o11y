@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 func handleRoot(w http.ResponseWriter, _ *http.Request) {
@@ -15,4 +16,21 @@ func handleRoot(w http.ResponseWriter, _ *http.Request) {
 func handleHealth(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
+
+func handleStatus(w http.ResponseWriter, r *http.Request) {
+	code := r.PathValue("code")
+	statusCode, err := strconv.Atoi(code)
+	if err != nil || statusCode < 100 || statusCode > 599 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "invalid status code"})
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  statusCode,
+		"message": http.StatusText(statusCode),
+	})
 }
