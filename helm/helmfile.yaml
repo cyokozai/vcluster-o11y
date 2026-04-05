@@ -382,13 +382,10 @@ releases:
               instrument:
                 - namespace: vcluster-1
                   open_ports: "8080"
-                  protocol: http
                 - namespace: vcluster-2
                   open_ports: "8080"
-                  protocol: http
                 - namespace: vcluster-3
                   open_ports: "8080"
-                  protocol: http
             # k8s.namespace.name を metrics の datapoint attribute として付与する
             # Alloy → Prometheus で k8s_namespace_name ラベルとして使用可能になる
             attributes:
