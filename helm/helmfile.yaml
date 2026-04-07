@@ -424,10 +424,6 @@ releases:
             # vcluster-1/2/3 の port 8080 のみを計装対象にする
             discovery:
               instrument:
-                - namespace: vcluster-1
-                  open_ports: "8080"
-                - namespace: vcluster-2
-                  open_ports: "8080"
                 - namespace: vcluster-3
                   open_ports: "8080"
             # k8s.namespace.name を metrics の datapoint attribute として付与する

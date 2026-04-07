@@ -2668,7 +2668,7 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
           "id": 1,
           "options": {"legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum by (vcluster) (label_replace(rate(http_server_request_duration_seconds_count{instance=~\"vcluster-.*[.]go-api-server.*\"}[$__rate_interval]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\"))", "legendFormat": "{{vcluster}}", "refId": "A"}],
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum by (vcluster) (label_replace(rate(http_server_request_duration_seconds_count{instance=~\"vcluster-.*[.]go-api-server.*\"}[5m]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\"))", "legendFormat": "{{vcluster}}", "refId": "A"}],
           "title": "リクエストレート (req/s)",
           "type": "timeseries"
         },
@@ -2688,7 +2688,7 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
           "id": 2,
           "options": {"legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "100 * sum by (vcluster) (label_replace(rate(http_server_request_duration_seconds_count{instance=~\"vcluster-.*[.]go-api-server.*\",http_response_status_code=~\"5..\"}[$__rate_interval]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\")) / sum by (vcluster) (label_replace(rate(http_server_request_duration_seconds_count{instance=~\"vcluster-.*[.]go-api-server.*\"}[$__rate_interval]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\"))", "legendFormat": "{{vcluster}}", "refId": "A"}],
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "100 * sum by (vcluster) (label_replace(rate(http_server_request_duration_seconds_count{instance=~\"vcluster-.*[.]go-api-server.*\",http_response_status_code=~\"5..\"}[5m]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\")) / sum by (vcluster) (label_replace(rate(http_server_request_duration_seconds_count{instance=~\"vcluster-.*[.]go-api-server.*\"}[5m]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\"))", "legendFormat": "{{vcluster}}", "refId": "A"}],
           "title": "エラーレート (%)",
           "type": "timeseries"
         },
@@ -2708,7 +2708,7 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
           "id": 3,
           "options": {"legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "histogram_quantile(0.99, sum by (le, vcluster) (label_replace(rate(http_server_request_duration_seconds_bucket{instance=~\"vcluster-.*[.]go-api-server.*\"}[$__rate_interval]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\")))", "legendFormat": "{{vcluster}}", "refId": "A"}],
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "histogram_quantile(0.99, sum by (le, vcluster) (label_replace(rate(http_server_request_duration_seconds_bucket{instance=~\"vcluster-.*[.]go-api-server.*\"}[5m]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\")))", "legendFormat": "{{vcluster}}", "refId": "A"}],
           "title": "P99 レイテンシ",
           "type": "timeseries"
         },
@@ -2728,7 +2728,7 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
           "id": 4,
           "options": {"legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "histogram_quantile(0.50, sum by (le, vcluster) (label_replace(rate(http_server_request_duration_seconds_bucket{instance=~\"vcluster-.*[.]go-api-server.*\"}[$__rate_interval]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\")))", "legendFormat": "{{vcluster}}", "refId": "A"}],
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "histogram_quantile(0.50, sum by (le, vcluster) (label_replace(rate(http_server_request_duration_seconds_bucket{instance=~\"vcluster-.*[.]go-api-server.*\"}[5m]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\")))", "legendFormat": "{{vcluster}}", "refId": "A"}],
           "title": "P50 レイテンシ (中央値)",
           "type": "timeseries"
         },
@@ -2739,7 +2739,7 @@ data:
           "gridPos": {"h": 4, "w": 8, "x": 0, "y": 16},
           "id": 5,
           "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum by (vcluster) (label_replace(rate(http_server_request_duration_seconds_count{instance=~\"vcluster-.*[.]go-api-server.*\"}[$__rate_interval]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\"))", "legendFormat": "{{vcluster}}", "refId": "A"}],
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum by (vcluster) (label_replace(rate(http_server_request_duration_seconds_count{instance=~\"vcluster-.*[.]go-api-server.*\"}[5m]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\"))", "legendFormat": "{{vcluster}}", "refId": "A"}],
           "title": "現在のリクエストレート",
           "type": "stat"
         },
@@ -2750,7 +2750,7 @@ data:
           "gridPos": {"h": 4, "w": 8, "x": 8, "y": 16},
           "id": 6,
           "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "histogram_quantile(0.99, sum by (le, vcluster) (label_replace(rate(http_server_request_duration_seconds_bucket{instance=~\"vcluster-.*[.]go-api-server.*\"}[$__rate_interval]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\")))", "legendFormat": "{{vcluster}}", "refId": "A"}],
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "histogram_quantile(0.99, sum by (le, vcluster) (label_replace(rate(http_server_request_duration_seconds_bucket{instance=~\"vcluster-.*[.]go-api-server.*\"}[5m]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\")))", "legendFormat": "{{vcluster}}", "refId": "A"}],
           "title": "現在の P99 レイテンシ",
           "type": "stat"
         },
@@ -2761,7 +2761,7 @@ data:
           "gridPos": {"h": 4, "w": 8, "x": 16, "y": 16},
           "id": 7,
           "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "100 * sum by (vcluster) (label_replace(rate(http_server_request_duration_seconds_count{instance=~\"vcluster-.*[.]go-api-server.*\",http_response_status_code=~\"5..\"}[$__rate_interval]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\")) / sum by (vcluster) (label_replace(rate(http_server_request_duration_seconds_count{instance=~\"vcluster-.*[.]go-api-server.*\"}[$__rate_interval]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\"))", "legendFormat": "{{vcluster}}", "refId": "A"}],
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "100 * sum by (vcluster) (label_replace(rate(http_server_request_duration_seconds_count{instance=~\"vcluster-.*[.]go-api-server.*\",http_response_status_code=~\"5..\"}[5m]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\")) / sum by (vcluster) (label_replace(rate(http_server_request_duration_seconds_count{instance=~\"vcluster-.*[.]go-api-server.*\"}[5m]), \"vcluster\", \"$1\", \"instance\", \"^(vcluster-[0-9]+)[.].*\"))", "legendFormat": "{{vcluster}}", "refId": "A"}],
           "title": "現在のエラーレート",
           "type": "stat"
         }
