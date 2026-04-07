@@ -1,6 +1,8 @@
-# vCluster と Grafana Alloy によるマルチテナント Kubernetes オブザーバビリティ基盤
+# vCluster × Grafana オブザーバビリティスイートによるマルチテナント Kubernetes 自動計装基盤
 
-単一の AWS EKS クラスタ上に vCluster で仮想クラスタ（テナント）を構築し，Grafana Alloy を集約ゲートウェイとしてメトリクス／トレース／ログを一元管理するオブザーバビリティ基盤です．
+単一の AWS EKS クラスタ上に vCluster で複数の仮想クラスタ（テナント）を構築し，**アプリケーションへの追加 SDK 不要**で全テナントのメトリクス・トレース・ログを一元管理するオブザーバビリティ基盤です．
+
+Grafana Beyla（eBPF 自動計装）を DaemonSet としてホストクラスタに 1 つ配置するだけで，仮想クラスタ内の全アプリプロセスを自動的に検出し計装します．テナント側での OTel SDK 導入・コード変更は一切不要です．Grafana Alloy が集約ゲートウェイとして機能し，Prometheus・Tempo・Loki・Grafana からなる Grafana オブザーバビリティスイート全体でテレメトリを可視化します．
 
 ## アーキテクチャ
 
@@ -32,28 +34,28 @@ flowchart TB
   demo_col -->|"OTLP gRPC\n(replicateServices: otel-demo/otelcol-to-alloy\n→ monitoring/alloy)"| alloy
 ```
 
-### 検証2: テレメトリ収集パターンの比較（Pattern A / B / C）
+### 検証2: Grafana オブザーバビリティスイートによる全仮想クラスタの自動計装
+
+Beyla DaemonSet をホストクラスタに 1 つ配置するだけで，vCluster 内の全アプリプロセスをカーネルレベルで自動検出・計装します．テナント側（仮想クラスタ内）への一切の変更は不要です．
 
 ```mermaid
 flowchart TB
-  subgraph vc1["vcluster-1 (namespace: vcluster-1)\nPattern A: OTel SDK + OTel Collector"]
-    app1["Go API Server\n(OTel SDK)"]
-    col1["OTel Collector"]
-    app1 -->|"OTLP gRPC :4317"| col1
+  subgraph vc1["vcluster-1"]
+    app1["Go API Server"]
   end
 
-  subgraph vc2["vcluster-2 (namespace: vcluster-2)\nPattern B: OTel SDK のみ"]
-    app2["Go API Server\n(OTel SDK)"]
+  subgraph vc2["vcluster-2"]
+    app2["Go API Server"]
   end
 
-  subgraph vc3["vcluster-3 (namespace: vcluster-3)\nPattern C: コード変更なし"]
-    app3["Go API Server\n(/metrics endpoint のみ)"]
+  subgraph vc3["vcluster-3"]
+    app3["Go API Server"]
   end
 
   subgraph host["Host Cluster (monitoring namespace)"]
     direction TB
-    beyla["Beyla DaemonSet\n(eBPF 自動計装)\nvcluster-3 の port 8080 プロセスのみ対象"]
-    alloy["Grafana Alloy\n(OTLP Receiver :4317/:4318\n+ Prometheus scrape)"]
+    beyla["Grafana Beyla DaemonSet\n(eBPF 自動計装)\nSDK 不要・コード変更不要\n全仮想クラスタのプロセスを自動検出"]
+    alloy["Grafana Alloy\n(集約ゲートウェイ)"]
     prometheus["Prometheus"]
     tempo["Tempo"]
     loki["Loki"]
@@ -66,10 +68,9 @@ flowchart TB
     prometheus & tempo & loki --> grafana
   end
 
-  col1 -->|"OTLP gRPC\n(replicateServices)"| alloy
-  app2 -->|"OTLP gRPC\n(replicateServices)"| alloy
-  alloy -->|"Prometheus scrape\n(discovery.kubernetes\n namespace: vcluster-3)"| app3
-  beyla -.->|"eBPF でプロセスを\nカーネルレベルで検出"| app3
+  app1 -. "eBPF\n(カーネルレベル自動検出)" .-> beyla
+  app2 -. "eBPF\n(カーネルレベル自動検出)" .-> beyla
+  app3 -. "eBPF\n(カーネルレベル自動検出)" .-> beyla
 ```
 
 ## コンポーネント一覧
