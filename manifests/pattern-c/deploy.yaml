@@ -21,6 +21,10 @@ spec:
       labels:
         app: go-api-server
         pattern: "c"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
     spec:
       securityContext:
         runAsNonRoot: true

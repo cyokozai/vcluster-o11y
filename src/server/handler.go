@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func handleRoot(w http.ResponseWriter, _ *http.Request) {
@@ -16,6 +18,10 @@ func handleRoot(w http.ResponseWriter, _ *http.Request) {
 func handleHealth(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
+
+func handleMetrics() http.Handler {
+	return promhttp.Handler()
 }
 
 func handleStatus(w http.ResponseWriter, r *http.Request) {

@@ -235,6 +235,50 @@ releases:
                 }
               }
 
+              // Pattern C: vcluster-3 の go-api-server /metrics を scrape
+              // vcluster-3 の Pod はホスト側 vcluster-3 namespace に同期される
+              // prometheus.io/scrape アノテーションを持つ Pod を自動検出して scrape する
+              discovery.kubernetes "vcluster3_pods" {
+                role = "pod"
+                namespaces {
+                  names = ["vcluster-3"]
+                }
+              }
+
+              discovery.relabel "vcluster3_metrics" {
+                targets = discovery.kubernetes.vcluster3_pods.targets
+
+                // prometheus.io/scrape: "true" のアノテーションがある Pod のみ対象
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_scrape"]
+                  regex         = "true"
+                  action        = "keep"
+                }
+                // scrape パスをアノテーションから取得（デフォルト: /metrics）
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_path"]
+                  target_label  = "__metrics_path__"
+                  regex         = "(.+)"
+                }
+                // scrape ポートをアノテーションから取得
+                rule {
+                  source_labels = ["__address__", "__meta_kubernetes_pod_annotation_prometheus_io_port"]
+                  target_label  = "__address__"
+                  regex         = "([^:]+)(?::\\d+)?;(\\d+)"
+                  replacement   = "$1:$2"
+                }
+                // vcluster_name ラベルを付与して Grafana で識別可能にする
+                rule {
+                  target_label = "vcluster_name"
+                  replacement  = "vcluster-3"
+                }
+              }
+
+              prometheus.scrape "vcluster3" {
+                targets    = discovery.relabel.vcluster3_metrics.output
+                forward_to = [prometheus.remote_write.default.receiver]
+              }
+
   - name: kube-prometheus-stack
     namespace: monitoring
     chart: prometheus-community/kube-prometheus-stack

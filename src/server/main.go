@@ -18,6 +18,7 @@ func main() {
 	mux.HandleFunc("/", handleRoot)
 	mux.HandleFunc("/health", handleHealth)
 	mux.HandleFunc("GET /status/{code}", handleStatus)
+	mux.Handle("/metrics", handleMetrics())
 
 	port := getEnv("PORT", "8080")
 	srv := &http.Server{Addr: ":" + port, Handler: mux}
