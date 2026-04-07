@@ -4,38 +4,72 @@
 
 ## アーキテクチャ
 
+### 検証1: OpenTelemetry Demo による基本動作確認
+
 ```mermaid
 flowchart TB
-  subgraph vc1["vcluster-1 (Pattern A: OTel Collector あり)"]
-    app1["Go API Server (OTel SDK)"]
-    col1["OTel Collector"]
-    app1 -->|"OTLP gRPC :4317"| col1
-  end
-
-  subgraph vc2["vcluster-2 (Pattern B: OTel Collector なし)"]
-    app2["Go API Server (OTel SDK)"]
-  end
-
-  subgraph vc3["vcluster-3 (Pattern C: Prometheus scrape)"]
-    app3["Go API Server (/metrics)"]
+  subgraph vc_demo["vcluster: otel-demo (namespace: vcluster-otel-demo)"]
+    direction TB
+    demo_apps["OTel Demo Microservices\n(Frontend / Cart / Checkout …)"]
+    demo_col["OTel Collector\n(otelcol-to-alloy)"]
+    demo_apps -->|"OTLP gRPC :4317"| demo_col
   end
 
   subgraph host["Host Cluster (monitoring namespace)"]
-    alloy["Grafana Alloy"]
+    direction TB
+    alloy["Grafana Alloy\n(OTLP Receiver :4317/:4318)"]
     prometheus["Prometheus"]
     tempo["Tempo"]
     loki["Loki"]
     grafana["Grafana"]
 
     alloy -->|"Remote Write"| prometheus
-    alloy -->|"OTLP"| tempo
-    alloy -->|"Loki Push"| loki
+    alloy -->|"OTLP gRPC"| tempo
+    alloy -->|"Loki Push API"| loki
     prometheus & tempo & loki --> grafana
   end
 
-  col1 -->|"OTLP (replicateServices)"| alloy
-  app2 -->|"OTLP (replicateServices)"| alloy
-  app3 -->|"/metrics (scrape)"| alloy
+  demo_col -->|"OTLP gRPC\n(replicateServices: otel-demo/otelcol-to-alloy\n→ monitoring/alloy)"| alloy
+```
+
+### 検証2: テレメトリ収集パターンの比較（Pattern A / B / C）
+
+```mermaid
+flowchart TB
+  subgraph vc1["vcluster-1 (namespace: vcluster-1)\nPattern A: OTel SDK + OTel Collector"]
+    app1["Go API Server\n(OTel SDK)"]
+    col1["OTel Collector"]
+    app1 -->|"OTLP gRPC :4317"| col1
+  end
+
+  subgraph vc2["vcluster-2 (namespace: vcluster-2)\nPattern B: OTel SDK のみ"]
+    app2["Go API Server\n(OTel SDK)"]
+  end
+
+  subgraph vc3["vcluster-3 (namespace: vcluster-3)\nPattern C: コード変更なし"]
+    app3["Go API Server\n(/metrics endpoint のみ)"]
+  end
+
+  subgraph host["Host Cluster (monitoring namespace)"]
+    direction TB
+    beyla["Beyla DaemonSet\n(eBPF 自動計装)\nvcluster-3 の port 8080 プロセスのみ対象"]
+    alloy["Grafana Alloy\n(OTLP Receiver :4317/:4318\n+ Prometheus scrape)"]
+    prometheus["Prometheus"]
+    tempo["Tempo"]
+    loki["Loki"]
+    grafana["Grafana"]
+
+    beyla -->|"OTLP gRPC\n(traces + metrics)"| alloy
+    alloy -->|"Remote Write"| prometheus
+    alloy -->|"OTLP gRPC"| tempo
+    alloy -->|"Loki Push API"| loki
+    prometheus & tempo & loki --> grafana
+  end
+
+  col1 -->|"OTLP gRPC\n(replicateServices)"| alloy
+  app2 -->|"OTLP gRPC\n(replicateServices)"| alloy
+  alloy -->|"Prometheus scrape\n(discovery.kubernetes\n namespace: vcluster-3)"| app3
+  beyla -.->|"eBPF でプロセスを\nカーネルレベルで検出"| app3
 ```
 
 ## コンポーネント一覧
@@ -54,7 +88,7 @@ flowchart TB
 
 ## ディレクトリ構成
 
-```
+```text
 .
 ├── terraform/          # EKS クラスタ (IaC)
 ├── helm/
@@ -184,7 +218,7 @@ kubectl get secret kube-prometheus-stack-grafana -n monitoring \
   -o jsonpath="{.data.admin-password}" | base64 --decode | pbcopy
 ```
 
-ブラウザで http://localhost:3000 を開き，ユーザー名 `admin`・コピーしたパスワードでログイン．
+ブラウザで <http://localhost:3000> を開き，ユーザー名 `admin`・コピーしたパスワードでログイン．
 
 ### 8. クラスタの削除
 
