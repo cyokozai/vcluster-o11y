@@ -410,9 +410,10 @@ releases:
   # vCluster-1/2/3 の go-api-server (port 8080) を eBPF でインターセプトし
   # OTLP traces/metrics を Alloy へ送信する
   - name: beyla
-    namespace: monitoring
+    namespace: beyla-system
     chart: grafana/beyla
     version: "1.14.0"
+    createNamespace: true
     values:
       - preset: application
         # port 8080 で待ち受けるプロセスを自動計装
@@ -428,6 +429,11 @@ releases:
                   open_ports: "8080"
             # k8s.namespace.name を metrics の datapoint attribute として付与する
             # Alloy → Prometheus で k8s_namespace_name ラベルとして使用可能になる
+            # go-api-server は plain HTTP のみ。https を除外することで
+            # ssl_to_pid_tid BPF マップの作成をスキップし OOM クラッシュを防ぐ
+            otel_traces_export:
+              instrumentations:
+                - http
             attributes:
               kubernetes:
                 enable: true
