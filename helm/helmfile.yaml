@@ -449,6 +449,16 @@ releases:
         securityContext:
           privileged: true
           runAsUser: 0
+        # bpffs: eBPF マップの永続化に必要
+        # EKS ノードに /sys/fs/bpf が存在しない場合に DirectoryOrCreate で作成する
+        volumes:
+          - name: bpffs
+            hostPath:
+              path: /sys/fs/bpf
+              type: DirectoryOrCreate
+        volumeMounts:
+          - name: bpffs
+            mountPath: /sys/fs/bpf
         # 全ノードにスケジュールできるよう taint を無視する
         tolerations:
           - operator: Exists
