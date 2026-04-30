@@ -6,9 +6,28 @@ import (
 	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	otellog "go.opentelemetry.io/otel/log"
+	"go.opentelemetry.io/otel/log/global"
 )
 
-func handleRoot(w http.ResponseWriter, _ *http.Request) {
+var tracer = otel.Tracer("go-api-server")
+
+func handleRoot(w http.ResponseWriter, r *http.Request) {
+	ctx, span := tracer.Start(r.Context(), "handle-root")
+	defer span.End()
+
+	span.SetAttributes(
+		attribute.String("http.method", r.Method),
+		attribute.String("http.path", r.URL.Path),
+	)
+
+	var rec otellog.Record
+	rec.SetSeverity(otellog.SeverityInfo)
+	rec.SetBody(otellog.StringValue("handling GET /"))
+	global.GetLoggerProvider().Logger("go-api-server").Emit(ctx, rec)
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": "Hello from go-api-server",
