@@ -272,6 +272,11 @@ releases:
                   target_label = "vcluster_name"
                   replacement  = "vcluster-3"
                 }
+                // service_name ラベルを付与して Pattern A/B と同一軸で比較可能にする
+                rule {
+                  target_label = "service_name"
+                  replacement  = "go-api-server-pattern-c"
+                }
               }
 
               prometheus.scrape "vcluster3" {
