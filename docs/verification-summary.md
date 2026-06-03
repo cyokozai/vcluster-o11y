@@ -77,7 +77,6 @@ kubelet_volume_stats_used_bytes{namespace="monitoring"}
 
 ## 2. 障害注入シナリオ一覧
 
-詳細手順は [step4-fault-injection-scenarios.md](step4-fault-injection-scenarios.md)、実行ログは [step4-execution-log.md](step4-execution-log.md) を参照。
 
 | # | シナリオ名 | Feature Flag | 設定値 | 注入対象サービス | 障害の種類 | 発火期待アラート | 難易度 |
 |---|---|---|---|---|---|---|---|
@@ -249,9 +248,7 @@ shipping [緑]  ← 影響なし
 
 | ドキュメント | 内容 |
 |---|---|
-| [observability-verification-plan.md](observability-verification-plan.md) | 検証全体の要件定義・実施手順 |
-| [step1-baseline.md](step1-baseline.md) | ベースライン計測手順 |
-| [step2-dashboard-setup.md](step2-dashboard-setup.md) | ダッシュボード構築手順 |
-| [step3-alert-rules-setup.md](step3-alert-rules-setup.md) | アラートルール設定手順 |
-| [step4-fault-injection-scenarios.md](step4-fault-injection-scenarios.md) | 障害注入シナリオ詳細手順 |
-| [step4-execution-log.md](step4-execution-log.md) | 実行ログ・記録テンプレート |
+| [blog.md](blog.md) | 検証結果・考察のまとめ |
+| [verification3-spec.md](verification3-spec.md) | 検証 3（テナント障害分離）の仕様 |
+| [results/verification2-20260520-183008.md](results/verification2-20260520-183008.md) | 検証 2 最終実行結果 |
+| [results/verification3-20260520-195908.md](results/verification3-20260520-195908.md) | 検証 3 最終実行結果 |

@@ -41,15 +41,15 @@ Beyla DaemonSet をホストクラスタに 1 つ配置するだけで，vCluste
 ```mermaid
 flowchart TB
   subgraph vc1["vcluster-1"]
-    app1["Go API Server"]
+    app1["計装サンプルサーバー"]
   end
 
   subgraph vc2["vcluster-2"]
-    app2["Go API Server"]
+    app2["計装サンプルサーバー"]
   end
 
   subgraph vc3["vcluster-3"]
-    app3["Go API Server"]
+    app3["計装サンプルサーバー"]
   end
 
   subgraph host["Host Cluster (monitoring namespace)"]
@@ -99,11 +99,11 @@ flowchart TB
 │   ├── storageclass/   # gp3 StorageClass
 │   ├── monitoring/     # Grafana アラートルール
 │   ├── vcluster/       # vCluster 設定ファイル (config.yaml, vcluster-{1,2,3}-config.yaml)
-│   ├── pattern-a/      # Go API Server + OTel Collector (OTLP → Alloy)
-│   ├── pattern-b/      # Go API Server (OTel SDK 直接 → Alloy)
-│   └── pattern-c/      # Go API Server (/metrics scrape)
+│   ├── pattern-a/      # 計装サンプルサーバー + OTel Collector (OTLP → Alloy)
+│   ├── pattern-b/      # 計装サンプルサーバー (OTel SDK 直接 → Alloy)
+│   └── pattern-c/      # 計装サンプルサーバー (/metrics scrape)
 └── src/
-    └── server01/       # Go API Server ソースコード
+    └── server/         # 計装サンプルサーバー ソースコード
 ```
 
 ## セットアップ手順
