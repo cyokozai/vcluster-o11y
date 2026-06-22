@@ -25,6 +25,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
         prometheus.io/path: "/metrics"
+        # Beyla (OBI 3.20+) はこの annotation を読み取って service.name を override する
+        # 結果: Prometheus / Tempo のラベルが job="go-api-server-pattern-c" に統一される
+        # (デフォルトは Pod の namespace/deployment 形式 "vcluster-3/vcluster-3" になる)
+        resource.opentelemetry.io/service.name: "go-api-server-pattern-c"
     spec:
       securityContext:
         runAsNonRoot: true

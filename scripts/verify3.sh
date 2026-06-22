@@ -508,6 +508,53 @@ else
   fail "Pattern B (vcluster-2) 5xx カウントが増加: ${baseline_int} → ${final_int} 件 (+${diff} 件)"
 fi
 
+# ==================== Phase 7: MTTD 計測 ====================
+# 検証 3 のシナリオ (vcluster-1 に 5xx 継続注入) は MTTD 計測の理想条件。
+# Phase 1 開始時刻を T0 として、Prometheus の historical query で
+# 「最初に rate(error) > 5% を超えた時刻」を T1 として取得する。
+# HighErrorRate alert の for: 5m を考慮し、T3 (firing 想定) は T1 + 300s。
+header "Phase 7: MTTD 計測 (HighErrorRate alert)"
+
+T0=$START_EPOCH
+T_NOW=$(date +%s)
+
+# T1: rate(5m) > 5% を超えた最初の時刻 (Phase 6 と同じ rate window で整合性を取る)
+# set -e/pipefail で早期 exit しないよう、エラー時は空文字列にフォールバック
+# (1) historical 範囲を Phase 1 開始から現在まで取得
+# (2) jq で values 配列が空でも null/empty を許容
+T1=""
+{
+  RAW=$(curl -sfG "http://localhost:${PROM_PORT}/api/v1/query_range" \
+    --data-urlencode 'query=100 * sum(rate(http_server_request_duration_seconds_count{job="go-api-server-pattern-a",http_response_status_code=~"5.."}[5m])) / sum(rate(http_server_request_duration_seconds_count{job="go-api-server-pattern-a"}[5m]))' \
+    --data-urlencode "start=${T0}" \
+    --data-urlencode "end=${T_NOW}" \
+    --data-urlencode 'step=15s' 2>/dev/null || echo '{}')
+
+  T1=$(echo "$RAW" | jq -r '
+    (.data.result // [])
+    | if length > 0 then .[0].values // [] else [] end
+    | .[]
+    | select((.[1] // "0" | tonumber) > 5)
+    | .[0]
+  ' 2>/dev/null | head -1 || echo "")
+} || true
+
+if [[ -n "$T1" && "$T1" != "null" ]]; then
+  T1_INT=${T1%.*}
+  MTTD_T1=$((T1_INT - T0))
+  # T3: HighErrorRate alert の for: 5m (300s) を考慮した firing 推定時刻
+  T3_ESTIMATED=$((T1_INT + 300))
+  MTTD_T3=$((T3_ESTIMATED - T0))
+  # save_report 関数から参照できるよう export
+  export MTTD_T1 MTTD_T3 T1_INT
+  pass "MTTD T1 (Pattern A エラーレート > 5% 初観測): ${MTTD_T1}s"
+  pass "MTTD T3 (HighErrorRate firing 推定 = T1 + for:5m): ${MTTD_T3}s"
+  info "正確な T3 (firing 時刻) は Grafana の Alerting UI で確認してください"
+else
+  info "MTTD T1: rate(error) > 5% を観測できなかった (リクエスト量不足の可能性)"
+  fail "Phase 7 MTTD 計測: T1 観測なし"
+fi
+
 # ==================== 結果サマリー ====================
 TOTAL=$((PASSED + FAILED))
 
@@ -596,7 +643,7 @@ fi
 header "実験データ保存"
 
 save_report() {
-  local report_dir="docs/results"
+  local report_dir="docs/v2/results"
   mkdir -p "$report_dir"
 
   local now_epoch
@@ -714,6 +761,21 @@ save_report() {
 |---|---|---|
 | エラーレート (rate[5m]) | ${err_rate_a_display}% | ${err_rate_b_display}% |
 | 5xx 累積カウント | ${prom_err_a} 件 | ${prom_err_b} 件 (ベースライン: ${BASELINE_B_ERR} 件) |
+
+## Phase 7: MTTD 計測
+
+検証 3 のシナリオ (vcluster-1 に 5xx 継続注入) は HighErrorRate alert の MTTD 計測条件を満たす。
+Phase 1 の T0 (5xx 注入開始) から、Pattern A のエラーレート (rate[5m]) が 5% を超えた時刻 T1 までを実測。
+HighErrorRate alert は \`for: 5m\` 設定なので、firing 推定時刻 T3 = T1 + 300s。
+
+| 指標 | 値 |
+|---|---|
+| T0 (5xx 注入開始) | $(date -r "$START_EPOCH" "+%Y-%m-%d %H:%M:%S %Z" 2>/dev/null || date -d "@$START_EPOCH" "+%Y-%m-%d %H:%M:%S %Z" 2>/dev/null || echo "$START_EPOCH") |
+| T1 (rate[5m] > 5% 初観測) | ${MTTD_T1:+$(date -r "$T1_INT" "+%Y-%m-%d %H:%M:%S %Z" 2>/dev/null || date -d "@$T1_INT" "+%Y-%m-%d %H:%M:%S %Z" 2>/dev/null || echo "$T1_INT")}${MTTD_T1:-(観測なし)} |
+| **MTTD_T1** | **${MTTD_T1:-未観測} 秒** (rate[5m] > 5% 検知まで) |
+| **MTTD_T3** | **${MTTD_T3:-未観測} 秒** (HighErrorRate firing 推定: T1 + for:5m=300s) |
+
+> 注: T3 は alert ルールの \`for: 5m\` を T1 に加算した推定値。実際の firing 時刻は Grafana の Alerting UI で確認可能。
 
 ## Traces サンプル (Tempo)
 

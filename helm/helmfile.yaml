@@ -22,7 +22,7 @@ releases:
   - name: vcluster
     namespace: vcluster-system
     chart: loft/vcluster
-    version: "0.32.1"
+    version: "0.34.2"
     createNamespace: true
     timeout: 1800
     values:
@@ -104,6 +104,12 @@ releases:
                 max_items: 10000
               span_metrics:
                 enable_target_info: true
+                # OTel SDK の HTTP 5xx は span.status=ERROR に自動マッピングされない
+                # 仕様 (OTel semconv) のため、http.status_code を spanmetrics の
+                # 追加ラベルとして抽出し、http_status_code=~"5.." で alert 判定可能にする
+                dimensions:
+                  - http.status_code
+                  - http.method
             storage:
               path: "/var/tempo/metrics"
             traces_storage:
@@ -115,11 +121,23 @@ releases:
                   - service-graphs
                   - span-metrics
                 max_active_series: 10000
+                # Tempo spanmetrics の dimensions は tenant-level override で指定する
+                # OTel SDK の HTTP 5xx は span.status=ERROR に自動マッピングされない
+                # 仕様のため、HTTP attributes を抽出して alert 判定に使用する
+                # 新旧 semconv 両方を指定: OTel SDK 1.21+ では http.response.status_code、
+                # 旧版では http.status_code
+                processor:
+                  span_metrics:
+                    dimensions:
+                      - http.response.status_code
+                      - http.status_code
+                      - http.request.method
+                      - http.method
 
   - name: loki
     namespace: monitoring
     chart: grafana/loki
-    version: "6.53.0"
+    version: "6.55.0"
     values:
       - deploymentMode: SingleBinary
         loki:
@@ -168,8 +186,16 @@ releases:
   - name: alloy
     namespace: monitoring
     chart: grafana/alloy
-    version: "1.6.1"
+    version: "1.8.2"
     values:
+      # E-1 対策: Alloy 自己メトリクス (otelcol_*) を Prometheus に scrape させる
+      # kube-prometheus-stack の serviceMonitorSelector で自動検出される
+      - serviceMonitor:
+          enabled: true
+          interval: 30s
+          # Prometheus Operator がデフォルトで scrape する label を付与
+          additionalLabels:
+            release: kube-prometheus-stack
       - alloy:
           extraPorts:
             - name: otlp-grpc
@@ -287,7 +313,7 @@ releases:
   - name: kube-prometheus-stack
     namespace: monitoring
     chart: prometheus-community/kube-prometheus-stack
-    version: "82.10.1"
+    version: "86.2.0"
     createNamespace: true
     values:
       - grafana:
@@ -417,7 +443,7 @@ releases:
   - name: beyla
     namespace: beyla-system
     chart: grafana/beyla
-    version: "1.14.0"
+    version: "1.16.8"
     createNamespace: true
     values:
       - preset: application
@@ -427,10 +453,14 @@ releases:
         # ブロックスカラー (|) ではなくネストした YAML で記述する
         config:
           data:
-            # vcluster-1/2/3 の port 8080 のみを計装対象にする
+            # vcluster-3 の Pattern C (go-api-server) のみを計装対象にする
+            # OBI 3.20+ では k8s_namespace selector が glob 動作で完全には機能しないため、
+            # Pod label による selector を使用する (より確実)
             discovery:
               instrument:
-                - namespace: vcluster-3
+                - k8s_pod_labels:
+                    app: go-api-server
+                    pattern: c
                   open_ports: "8080"
             # k8s.namespace.name を metrics の datapoint attribute として付与する
             # Alloy → Prometheus で k8s_namespace_name ラベルとして使用可能になる

@@ -562,7 +562,7 @@ fi
 header "実験データ保存"
 
 save_report() {
-  local report_dir="docs/results"
+  local report_dir="docs/v2/results"
   mkdir -p "$report_dir"
 
   local now_epoch

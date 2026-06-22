@@ -2064,7 +2064,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "sum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n)",
+              "expr": "sum by (service) (\n  rate(traces_spanmetrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", service=~\"$service_name\"}[5m])\n)",
               "instant": false,
               "legendFormat": "__auto",
               "range": true,
@@ -2241,7 +2241,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "sum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n)",
+              "expr": "sum by (service) (\n  rate(traces_spanmetrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", service=~\"$service_name\"}[5m])\n)",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -2253,7 +2253,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "sum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", status_code=\"STATUS_CODE_ERROR\", service_name=~\"$service_name\"}[5m])\n)\n/\nsum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n)",
+              "expr": "sum by (service) (\n  rate(traces_spanmetrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", status_code=\"STATUS_CODE_ERROR\", service=~\"$service_name\"}[5m])\n)\n/\nsum by (service) (\n  rate(traces_spanmetrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", service=~\"$service_name\"}[5m])\n)",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -2378,7 +2378,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "sum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", status_code=\"STATUS_CODE_ERROR\", service_name=~\"$service_name\"}[5m])\n)\n/\nsum by (service_name) (\n  rate(traces_span_metrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n)",
+              "expr": "sum by (service) (\n  rate(traces_spanmetrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", status_code=\"STATUS_CODE_ERROR\", service=~\"$service_name\"}[5m])\n)\n/\nsum by (service) (\n  rate(traces_spanmetrics_calls_total{span_kind=\"SPAN_KIND_SERVER\", service=~\"$service_name\"}[5m])\n)",
               "range": true,
               "refId": "A"
             }
@@ -2521,7 +2521,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(0.99,\n  sum by (service_name, le) (\n    rate(traces_span_metrics_duration_milliseconds_bucket{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n  )\n)",
+              "expr": "histogram_quantile(0.99,\n  sum by (service, le) (\n    rate(traces_spanmetrics_latency_bucket{span_kind=\"SPAN_KIND_SERVER\", service=~\"$service_name\"}[5m])\n  )\n) * 1000",
               "range": true,
               "refId": "A"
             },
@@ -2531,7 +2531,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(0.95,\n  sum by (service_name, le) (\n    rate(traces_span_metrics_duration_milliseconds_bucket{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n  )\n)",
+              "expr": "histogram_quantile(0.95,\n  sum by (service, le) (\n    rate(traces_spanmetrics_latency_bucket{span_kind=\"SPAN_KIND_SERVER\", service=~\"$service_name\"}[5m])\n  )\n) * 1000",
               "hide": false,
               "instant": false,
               "legendFormat": "__auto",
@@ -2544,7 +2544,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(0.50,\n  sum by (service_name, le) (\n    rate(traces_span_metrics_duration_milliseconds_bucket{span_kind=\"SPAN_KIND_SERVER\", service_name=~\"$service_name\"}[5m])\n  )\n)",
+              "expr": "histogram_quantile(0.50,\n  sum by (service, le) (\n    rate(traces_spanmetrics_latency_bucket{span_kind=\"SPAN_KIND_SERVER\", service=~\"$service_name\"}[5m])\n  )\n) * 1000",
               "hide": false,
               "instant": false,
               "legendFormat": "__auto",
@@ -2613,14 +2613,14 @@ data:
               "type": "prometheus",
               "uid": "prometheus"
             },
-            "definition": "label_values(traces_span_metrics_calls_total, service_name)",
+            "definition": "label_values(traces_spanmetrics_calls_total, service)",
             "includeAll": true,
             "label": "Service",
             "multi": true,
             "name": "service_name",
             "options": [],
             "query": {
-              "query": "label_values(traces_span_metrics_calls_total, service_name)",
+              "query": "label_values(traces_spanmetrics_calls_total, service)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 2,
