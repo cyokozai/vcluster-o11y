@@ -1,0 +1,449 @@
+{
+  "experiment_id": "postcheck-20260610-075742",
+  "start_time": "2026-06-10T07:57:42+09:00",
+  "tool_versions": {
+    "helm": "v4.2.0+g0646808",
+    "vcluster": "vcluster version 0.34.2",
+    "kubectl_client": "v1.36.1"
+  },
+  "measurements": {
+    "C-2_pattern_c_beyla_metrics_count": [
+      {
+        "metric": {
+          "__name__": "http_server_request_duration_seconds_sum",
+          "job": "vcluster-3/go-api-server-pattern-c"
+        },
+        "value": [
+          1781045867.596,
+          "5"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "http_server_request_duration_seconds_count",
+          "job": "vcluster-3/go-api-server-pattern-c"
+        },
+        "value": [
+          1781045867.596,
+          "5"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "http_server_request_duration_seconds_bucket",
+          "job": "vcluster-3/go-api-server-pattern-c"
+        },
+        "value": [
+          1781045867.596,
+          "80"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "http_server_request_body_size_bytes_sum",
+          "job": "vcluster-3/go-api-server-pattern-c"
+        },
+        "value": [
+          1781045867.596,
+          "5"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "http_server_request_body_size_bytes_count",
+          "job": "vcluster-3/go-api-server-pattern-c"
+        },
+        "value": [
+          1781045867.596,
+          "5"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "http_server_request_body_size_bytes_bucket",
+          "job": "vcluster-3/go-api-server-pattern-c"
+        },
+        "value": [
+          1781045867.596,
+          "55"
+        ]
+      }
+    ],
+    "C-2_pattern_c_beyla_p99_latency_ms": [
+      {
+        "metric": {},
+        "value": [
+          1781045867.708,
+          "4.95"
+        ]
+      }
+    ],
+    "C-2_pattern_c_scrape_go_runtime_metrics": [
+      {
+        "metric": {
+          "__name__": "go_gc_duration_seconds"
+        },
+        "value": [
+          1781045867.839,
+          "5"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_gc_duration_seconds_sum"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_gc_duration_seconds_count"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_gc_gogc_percent"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_gc_gomemlimit_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_goroutines"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_info"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_alloc_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_alloc_bytes_total"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_buck_hash_sys_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_frees_total"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_gc_sys_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_heap_alloc_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_heap_idle_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_heap_inuse_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_heap_objects"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_heap_released_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_heap_sys_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_last_gc_time_seconds"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_mallocs_total"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_mcache_inuse_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_mcache_sys_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_mspan_inuse_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_mspan_sys_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_next_gc_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_other_sys_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_stack_inuse_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_stack_sys_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_memstats_sys_bytes"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_sched_gomaxprocs_threads"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "go_threads"
+        },
+        "value": [
+          1781045867.839,
+          "1"
+        ]
+      }
+    ],
+    "C-2_pattern_ab_beyla_overlap_check": [],
+    "C-2_pattern_c_metrics_endpoint_traffic": [
+      {
+        "metric": {
+          "http_request_method": "GET",
+          "http_response_status_code": "200",
+          "instance": "vcluster-3.go-api-server-8685864fdc-msv92-x-default-x-vcluster-3.go-api-server",
+          "job": "vcluster-3/go-api-server-pattern-c",
+          "url_path": "/metrics"
+        },
+        "value": [
+          1781045868.128,
+          "0"
+        ]
+      },
+      {
+        "metric": {
+          "http_request_method": "GET",
+          "http_response_status_code": "200",
+          "instance": "vcluster-3.go-api-server-56486fcdfb-2tsss-x-default-x-vcluster-3.go-api-server",
+          "job": "vcluster-3/go-api-server-pattern-c",
+          "url_path": "/metrics"
+        },
+        "value": [
+          1781045868.128,
+          "70"
+        ]
+      }
+    ],
+    "D-1_pattern_a_error_rate_avg": [
+      {
+        "metric": {},
+        "value": [
+          1781045868.244,
+          "43.805388045206655"
+        ]
+      }
+    ],
+    "D-1_pattern_a_error_rate_max": [
+      {
+        "metric": {},
+        "value": [
+          1781045868.334,
+          "45.45454545454545"
+        ]
+      }
+    ],
+    "D-1_pattern_b_error_rate_avg": [],
+    "D-1_pattern_b_error_rate_max": [],
+    "D-1_pattern_c_error_rate_avg": [],
+    "D-1_pattern_c_error_rate_max": [],
+    "D-2_pattern_a_5xx_increase_10m": [
+      {
+        "metric": {
+          "http_request_method": "GET",
+          "http_response_status_code": "500",
+          "http_route": "/status/{code}",
+          "job": "go-api-server-pattern-a",
+          "network_protocol_name": "http",
+          "network_protocol_version": "1.1",
+          "server_address": "localhost",
+          "server_port": "8081",
+          "url_scheme": "http"
+        },
+        "value": [
+          1781045868.825,
+          "262.2217366264137"
+        ]
+      }
+    ],
+    "D-2_pattern_b_5xx_increase_10m": [],
+    "D-2_pattern_c_5xx_increase_10m": [],
+    "E-1_alloy_received_spans_total_increase": [],
+    "E-1_alloy_sent_spans_total_increase": [],
+    "E-1_alloy_queue_size_current": [],
+    "E-1_alloy_send_failed_spans_total_increase": [],
+    "E-1_observation_window": {
+      "start_epoch": 1781042268,
+      "end_epoch": 1781045868,
+      "duration_seconds": 3600
+    },
+    "summary": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1
+    }
+  }
+}
