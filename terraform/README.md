@@ -1,80 +1,57 @@
-# 1\. EKS クラスタの構築
+# EKS クラスタの構築 (Terraform)
 
-- move `terraform` directory
+AWS EKS クラスタ + VPC + EBS CSI Driver を Terraform で構築します．
 
-  ```bash
-  cd terraform
-  ```
+## バージョン
 
-- IAM ユーザまたは IAM ロールの ARN を取得する
+| ツール | バージョン |
+| --- | --- |
+| Terraform | 1.15.5 |
+| AWS provider | 5.x |
+| EKS module | v20 系 |
+| VPC module | v5 系 |
+| EKS バージョン | 1.34 |
+| ノードインスタンス | t3.large × 3 |
 
-  ```shell
-  aws sts get-caller-identity
-  ```
+## 構築手順
 
-- `terraform` ディレクトリへ移動し、 `terraform.tfvars` を作成し、先ほど取得した ARN を指定する
+```bash
+cd terraform/
 
-  ```bash
-  cat <<EOF > terraform.tfvars
-  eks_access_entry_principal_arn = "arn:aws:iam::hogehoge"
-  EOF
-  ```
+# tfvars を生成（IAM ARN を自動取得）
+echo "eks_access_entry_principal_arn = $(aws sts get-caller-identity --output json --no-cli-pager | jq '.Arn')" > terraform.tfvars
 
-- 初期化を行う
+# 初期化
+terraform init
+# 2 回目以降は terraform init -reconfigure
 
-  ```shell
-  terraform init
+# 確認
+terraform plan -var-file="terraform.tfvars"
 
-  # 2回目以降
-  terraform init -reconfigure
-  ```
+# 適用（15〜20 分）
+terraform apply -var-file="terraform.tfvars"
+```
 
-- 構築を開始
+## kubeconfig の取得
 
-  ```shell
-  terraform apply -var-file="terraform.tfvars"
-  ```
+```bash
+export REGION="ap-northeast-1"
+export CLUSTER_NAME="demo-eks-vcluster"
 
-- リージョンとクラスタ名を変数に保存
+aws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME
+kubectl cluster-info
+kubectl get nodes
+```
 
-  ```bash
-  export REGION="ap-northeast-1" &&\
-  export CLUSTER_NAME="demo-eks-vcluster" &&\
-  echo "$REGION" &&\
-  echo "$CLUSTER_NAME"
-  ```
+## EBS CSI Driver の確認
 
-- クレデンシャルを取得
+```bash
+kubectl get pods -n kube-system | grep ebs
+```
 
-  ```shell
-  aws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME
-  export DEV_KUBE_CONTEXT="$(kubectl config current-context)"
-  echo $DEV_KUBE_CONTEXT
-  ```
+## 破棄
 
-- クラスタの確認
-
-  ```shell
-  kubectl cluster-info
-  ```
-
-- gp3 StorageClass をデプロイ
-
-  ```bash
-  cd ..
-  kubectl apply -f manifests/storageclass/gp3-storageclass.yaml
-  ```
-
----
-
-- Helm で管理するリソースをアンインストール
-
-  ```bash
-  helmfile destroy --file ../helm/
-  ```
-
-- クラスタを破棄
-
-  ```shell
-  terraform destroy -var-file="terraform.tfvars"
-  ```
+```bash
+cd terraform/
+terraform destroy -var-file="terraform.tfvars"
+```
