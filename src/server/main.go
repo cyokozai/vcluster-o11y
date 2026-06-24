@@ -23,6 +23,7 @@ func main() {
 	defer func() {
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
+
 		if err := shutdown(shutdownCtx); err != nil {
 			log.Printf("OTel shutdown error: %v", err)
 		}
@@ -39,6 +40,7 @@ func main() {
 
 	go func() {
 		log.Printf("go-api-server listening on :%s", port)
+		
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("server error: %v", err)
 		}
@@ -48,6 +50,7 @@ func main() {
 	log.Println("shutting down...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		log.Printf("server shutdown error: %v", err)
 	}
@@ -57,5 +60,6 @@ func getEnv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
 	}
+
 	return fallback
 }

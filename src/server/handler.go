@@ -52,6 +52,7 @@ func handleStatus(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"error": "invalid status code"})
 		return
 	}
+	
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(map[string]interface{}{

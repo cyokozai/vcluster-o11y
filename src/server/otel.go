@@ -53,6 +53,7 @@ func initOTel(ctx context.Context) (func(context.Context) error, error) {
 	if err != nil {
 		return nil, fmt.Errorf("trace exporter: %w", err)
 	}
+
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(traceExp),
 		sdktrace.WithResource(res),
@@ -66,20 +67,18 @@ func initOTel(ctx context.Context) (func(context.Context) error, error) {
 	if err != nil {
 		return nil, fmt.Errorf("metric exporter: %w", err)
 	}
-	// デフォルトバケット境界は最小 5ms のため、サブミリ秒〜数 ms 帯のレスポンスタイムを
-	// 正確に計測できない。0.5ms 単位の細粒度境界を追加することで P99/P50 の精度を高める。
+
 	httpLatencyView := sdkmetric.NewView(
 		sdkmetric.Instrument{Kind: sdkmetric.InstrumentKindHistogram},
 		sdkmetric.Stream{
 			Aggregation: sdkmetric.AggregationExplicitBucketHistogram{
 				Boundaries: []float64{
-					0.0005, 0.001, 0.0025, 0.005, 0.0075,
-					0.01, 0.025, 0.05, 0.075, 0.1,
-					0.25, 0.5, 1.0, 2.5, 5.0,
+					0.0005, 0.001, 0.0025, 0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0,
 				},
 			},
 		},
 	)
+
 	mp := sdkmetric.NewMeterProvider(
 		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExp,
 			sdkmetric.WithInterval(60*time.Second),
@@ -96,6 +95,7 @@ func initOTel(ctx context.Context) (func(context.Context) error, error) {
 	if err != nil {
 		return nil, fmt.Errorf("log exporter: %w", err)
 	}
+
 	lp := sdklog.NewLoggerProvider(
 		sdklog.WithProcessor(sdklog.NewBatchProcessor(logExp)),
 		sdklog.WithResource(res),
@@ -104,6 +104,7 @@ func initOTel(ctx context.Context) (func(context.Context) error, error) {
 
 	return func(ctx context.Context) error {
 		var errs []error
+
 		for _, shutdown := range []func(context.Context) error{
 			tp.Shutdown, mp.Shutdown, lp.Shutdown,
 		} {
@@ -114,6 +115,7 @@ func initOTel(ctx context.Context) (func(context.Context) error, error) {
 		if len(errs) > 0 {
 			return fmt.Errorf("otel shutdown: %v", errs)
 		}
+		
 		return nil
 	}, nil
 }
