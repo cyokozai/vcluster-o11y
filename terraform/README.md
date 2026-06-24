@@ -32,6 +32,21 @@ terraform plan -var-file="terraform.tfvars"
 terraform apply -var-file="terraform.tfvars"
 ```
 
+## ECR リポジトリ URL の取得とマニフェストへの反映
+
+`terraform apply` 完了後，ECR の URL を出力から取得してマニフェストに反映します．
+
+```bash
+# ECR URL を取得
+export ECR_URL=$(terraform output -raw ecr_repository_url)
+
+# deploy.yaml のプレースホルダーを置換
+sed -i '' "s|<ECR_REPOSITORY_URL>|${ECR_URL}|g" \
+  ../manifests/pattern-a/deploy.yaml \
+  ../manifests/pattern-b/deploy.yaml \
+  ../manifests/pattern-c/deploy.yaml
+```
+
 ## kubeconfig の取得
 
 ```bash
