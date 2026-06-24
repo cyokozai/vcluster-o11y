@@ -1,9 +1,0 @@
-.env
-Dockerfile
-docker-compose.y*ml
-compose.y*ml
-README.md
-LICENSE
-
-.DS_Store*
-*.DS_Store
