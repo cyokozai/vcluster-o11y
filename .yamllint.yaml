@@ -1,6 +1,11 @@
 ---
 extends: default
 
+# Grafana ダッシュボードはミニファイされた JSON が埋め込まれており
+# 行長ルールを適用できないため除外する
+ignore: |
+  manifests/monitoring/grafana-dashboards.yaml
+
 rules:
   line-length:
     max: 200

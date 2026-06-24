@@ -1,12 +1,6 @@
 # Pattern A: OTel Collector あり
 # vcluster create vcluster-1 -n vcluster-1 --values manifests/vcluster/vcluster-1-config.yaml
 controlPlane:
-  distro:
-    k3s:
-      enabled: true
-      image:
-        tag: v1.31.4-k3s1
-
   backingStore:
     etcd:
       deploy:

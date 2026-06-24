@@ -1,12 +1,6 @@
 # Pattern C: Prometheus scrape のみ (OTel SDK なし)
 # vcluster create vcluster-3 -n vcluster-3 --values manifests/vcluster/vcluster-3-config.yaml
 controlPlane:
-  distro:
-    k3s:
-      enabled: true
-      image:
-        tag: v1.31.4-k3s1
-
   backingStore:
     etcd:
       deploy:
@@ -35,13 +29,6 @@ sync:
     storageClasses:
       enabled: true
 
-# Pattern C: toHost で go-api-server の /metrics をホスト側に公開
-# Alloy がホスト側から scrape できるようにする
-networking:
-  replicateServices:
-    toHost:
-      - from: default/go-api-server
-        to: vcluster-3/go-api-server
 
 policies:
   podSecurityStandard: baseline

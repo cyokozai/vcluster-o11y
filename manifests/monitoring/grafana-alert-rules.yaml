@@ -70,8 +70,6 @@ data:
               severity: warning
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email
           - uid: cfeaow5kmjjlsc
             title: vClusterQuotaExhaustion
             condition: Threshold
@@ -132,8 +130,6 @@ data:
               severity: warning
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email
       - orgId: 1
         name: pipeline
         folder: OTEL Demo Alerts
@@ -197,8 +193,6 @@ data:
               severity: warning
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email
       - orgId: 1
         name: service-health
         folder: OTEL Demo Alerts
@@ -216,9 +210,12 @@ data:
                 model:
                   editorMode: code
                   expr: |-
-                    sum by (service_name) (
-                      rate(traces_span_metrics_calls_total{span_kind="SPAN_KIND_SERVER"}[5m])
+                    sum by (service) (
+                      rate(traces_spanmetrics_calls_total{span_kind="SPAN_KIND_SERVER"}[5m])
                     )
+                  # 注: OTel SDK 標準では HTTP 5xx は span.status=ERROR に自動マッピング
+                  #     されない。Tempo の span_metrics.dimensions に http.status_code を
+                  #     追加して http_response_status_code=~"5.." で判定する
                   instant: true
                   intervalMs: 1000
                   legendFormat: __auto
@@ -236,10 +233,10 @@ data:
                     uid: prometheus
                   editorMode: code
                   expr: |-
-                    sum by (service_name) (
-                      rate(traces_span_metrics_calls_total{
+                    sum by (service) (
+                      rate(traces_spanmetrics_calls_total{
                         span_kind="SPAN_KIND_SERVER",
-                        status_code="STATUS_CODE_ERROR"
+                        http_response_status_code=~"5.."
                       }[5m])
                     )
                   instant: true
@@ -304,14 +301,12 @@ data:
             execErrState: Error
             for: 5m
             annotations:
-              description: 'サービス {{ $labels.service_name }} のエラーレートが閾値 5% を超えています。現在値: {{ index $values "Error Rate" }}%'
-              summary: '{{ $labels.service_name }} のエラーレートが {{ index $values "Error Rate" }}% を超過'
+              description: 'サービス {{ $labels.service }} のエラーレートが閾値 5% を超えています。現在値: {{ index $values "Error Rate" }}%'
+              summary: '{{ $labels.service }} のエラーレートが {{ index $values "Error Rate" }}% を超過'
             labels:
               severity: critical
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email
           - uid: afeamdyr3vchsf
             title: HighLatencyP99
             condition: Threshold
@@ -325,13 +320,13 @@ data:
                   editorMode: code
                   expr: |
                     histogram_quantile(0.99,
-                      sum by (service_name, le) (
-                        rate(traces_span_metrics_duration_milliseconds_bucket{
+                      sum by (service, le) (
+                        rate(traces_spanmetrics_latency_bucket{
                           span_kind="SPAN_KIND_SERVER",
-                          service_name!~"flagd|image-provider"
+                          service!~"flagd|image-provider"
                         }[5m])
                       )
-                    )
+                    ) * 1000
                   instant: true
                   intervalMs: 1000
                   legendFormat: __auto
@@ -371,14 +366,12 @@ data:
             execErrState: Error
             for: 5m
             annotations:
-              description: 'サービス {{ $labels.service_name }} の P99 レイテンシが閾値 2000ms を超えています。現在値: {{ index $values "HighLatencyP99" }}ms'
-              summary: '{{ $labels.service_name }} の P99 レイテンシが 2s を超過'
+              description: 'サービス {{ $labels.service }} の P99 レイテンシが閾値 2000ms を超えています。現在値: {{ index $values "HighLatencyP99" }}ms'
+              summary: '{{ $labels.service }} の P99 レイテンシが 2s を超過'
             labels:
               severity: warning
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email
           - uid: ffean7ocv4u0wc
             title: ServiceDown
             condition: Threshold
@@ -391,11 +384,11 @@ data:
                 model:
                   editorMode: code
                   expr: |
-                    sum by (service_name) (
-                      rate(traces_span_metrics_calls_total{
+                    sum by (service) (
+                      rate(traces_spanmetrics_calls_total{
                         span_kind="SPAN_KIND_SERVER",
-                        status_code!="STATUS_CODE_ERROR",
-                        service_name!="image-provider"
+                        http_response_status_code!~"5..",
+                        service!="image-provider"
                       }[3m])
                     )
                   instant: true
@@ -433,14 +426,12 @@ data:
             execErrState: Error
             for: 5m
             annotations:
-              description: サービス {{ $labels.service_name }} の直近 3 分間の成功リクエストレートがほぼ 0 です
-              summary: '{{ $labels.service_name }} がダウンしている可能性'
+              description: サービス {{ $labels.service }} の直近 3 分間の成功リクエストレートがほぼ 0 です
+              summary: '{{ $labels.service }} がダウンしている可能性'
             labels:
               severity: critical
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email
           - uid: afeanp3qejmrke
             title: PodOOMKillRisk
             condition: Threshold
@@ -551,5 +542,3 @@ data:
               severity: warning
               team: platform
             isPaused: false
-            notification_settings:
-              receiver: grafana-default-email

@@ -1,5 +1,7 @@
 # Pattern B: Go API Server (OTel SDK → Alloy 直接)
 # kubectl apply -f manifests/pattern-b/deploy.yaml
+#
+# テレメトリフロー: go-api-server → OTel SDK → alloy:4317 (replicateServices) → ホスト Alloy
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -27,17 +29,18 @@ spec:
           type: RuntimeDefault
       containers:
         - name: go-api-server
-          image: <ECR_REPO>/go-api-server:latest
+          image: <ECR_REPOSITORY_URL>:latest
           ports:
             - containerPort: 8080
           env:
             - name: PORT
               value: "8080"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "alloy.default.svc.cluster.local:4317"
             - name: OTEL_SERVICE_NAME
               value: "go-api-server-pattern-b"
-            # replicateServices で複製された Alloy Service に直接送信
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "alloy:4317"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "grpc"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
