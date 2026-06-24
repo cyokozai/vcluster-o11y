@@ -1,0 +1,53 @@
+# Pattern A: OTel Collector あり
+# vcluster create vcluster-1 -n vcluster-1 --values manifests/vcluster/vcluster-1-config.yaml
+controlPlane:
+  backingStore:
+    etcd:
+      deploy:
+        enabled: false
+
+  statefulSet:
+    resources:
+      limits:
+        cpu: "4"
+        memory: "4Gi"
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+
+sync:
+  toHost:
+    services:
+      enabled: true
+    persistentVolumeClaims:
+      enabled: true
+  fromHost:
+    nodes:
+      enabled: true
+      selector:
+        all: true
+    storageClasses:
+      enabled: true
+
+# Pattern A/B: fromHost で Alloy を仮想クラスタ内に複製
+networking:
+  replicateServices:
+    fromHost:
+      - from: monitoring/alloy
+        to: default/alloy
+
+policies:
+  podSecurityStandard: baseline
+  resourceQuota:
+    enabled: true
+    quota:
+      count/pods: "20"
+      count/services: "20"
+  limitRange:
+    enabled: true
+    default:
+      cpu: "500m"
+      memory: "512Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"

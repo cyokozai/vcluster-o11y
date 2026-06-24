@@ -1,0 +1,20 @@
+---
+extends: default
+
+# Grafana ダッシュボードはミニファイされた JSON が埋め込まれており
+# 行長ルールを適用できないため除外する
+ignore: |
+  manifests/monitoring/grafana-dashboards.yaml
+
+rules:
+  line-length:
+    max: 200
+    allow-non-breakable-inline-mappings: true
+  comments:
+    min-spaces-from-content: 1
+  truthy:
+    check-keys: false
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
+  document-start: disable

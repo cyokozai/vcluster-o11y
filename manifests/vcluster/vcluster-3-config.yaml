@@ -1,0 +1,47 @@
+# Pattern C: Prometheus scrape のみ (OTel SDK なし)
+# vcluster create vcluster-3 -n vcluster-3 --values manifests/vcluster/vcluster-3-config.yaml
+controlPlane:
+  backingStore:
+    etcd:
+      deploy:
+        enabled: false
+
+  statefulSet:
+    resources:
+      limits:
+        cpu: "4"
+        memory: "4Gi"
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+
+sync:
+  toHost:
+    services:
+      enabled: true
+    persistentVolumeClaims:
+      enabled: true
+  fromHost:
+    nodes:
+      enabled: true
+      selector:
+        all: true
+    storageClasses:
+      enabled: true
+
+
+policies:
+  podSecurityStandard: baseline
+  resourceQuota:
+    enabled: true
+    quota:
+      count/pods: "20"
+      count/services: "20"
+  limitRange:
+    enabled: true
+    default:
+      cpu: "500m"
+      memory: "512Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"

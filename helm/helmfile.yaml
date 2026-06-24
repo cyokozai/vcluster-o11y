@@ -1,6 +1,11 @@
+# Deployment of vCluster and Observability Stack on the Dev Environment
+
 repositories:
   - name: loft
     url: https://charts.loft.sh
+
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
 
   - name: prometheus-community
     url: https://prometheus-community.github.io/helm-charts
@@ -17,42 +22,491 @@ releases:
   - name: vcluster
     namespace: vcluster-system
     chart: loft/vcluster
-    version: "0.29.0"
+    version: "0.34.2"
     createNamespace: true
     timeout: 1800
     values:
-    - sync:
-        fromHost:
-          ingressClasses:
-            enabled: true
-          storageClasses:
-            enabled: true
-        toHost:
-          ingresses:
-            enabled: true
-          services:
-            enabled: true
-      controlPlane:
-        statefulSet:
-          persistence:
-            volumeClaim:
+      - sync:
+          fromHost:
+            nodes:
               enabled: true
-              size: 10Gi
-              storageClass: gp3
+            priorityClasses:
+              enabled: true
+            ingressClasses:
+              enabled: true
+            storageClasses:
+              enabled: true
+          toHost:
+            ingresses:
+              enabled: true
+            services:
+              enabled: true
+        controlPlane:
+          backingStore:
+            etcd:
+              deploy:
+                enabled: true
+                statefulSet:
+                  persistence:
+                    volumeClaim:
+                      enabled: true
+                      size: 5Gi
+                      storageClass: gp3
+          statefulSet:
+            persistence:
+              volumeClaim:
+                enabled: true
+                size: 10Gi
+                storageClass: gp3
+            scheduling:
+              podManagementPolicy: Parallel
+        deploy:
+          metricsServer:
+            enabled: false
+        policies:
+          podSecurityStandard: "baseline"
+          networkPolicy:
+            enabled: true
+          resourceQuota:
+            enabled: true
+            quota:
+              requests.cpu: "2"
+              requests.memory: "8Gi"
+              limits.cpu: "96"
+              limits.memory: "64Gi"
+        integrations:
+          metricsServer:
+            enabled: false
+            nodes: true
+            pods: true
+        networking:
+          replicateServices:
+            fromHost:
+              - from: monitoring/alloy
+                to: otel-demo/otelcol-to-alloy
+
+  - name: tempo
+    namespace: monitoring
+    chart: grafana/tempo
+    version: "1.24.4"
+    values:
+      - persistence:
+          enabled: true
+          size: 10Gi
+          storageClass: gp3
+        tempo:
+          metricsGenerator:
+            enabled: true
+            remoteWriteUrl: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+            processor:
+              service_graphs:
+                wait: 10s
+                max_items: 10000
+              span_metrics:
+                enable_target_info: true
+                # OTel SDK の HTTP 5xx は span.status=ERROR に自動マッピングされない
+                # 仕様 (OTel semconv) のため、http.status_code を spanmetrics の
+                # 追加ラベルとして抽出し、http_status_code=~"5.." で alert 判定可能にする
+                dimensions:
+                  - http.status_code
+                  - http.method
+            storage:
+              path: "/var/tempo/metrics"
+            traces_storage:
+              path: "/var/tempo/wal"
+          overrides:
+            defaults:
+              metrics_generator:
+                processors:
+                  - service-graphs
+                  - span-metrics
+                max_active_series: 10000
+                # Tempo spanmetrics の dimensions は tenant-level override で指定する
+                # OTel SDK の HTTP 5xx は span.status=ERROR に自動マッピングされない
+                # 仕様のため、HTTP attributes を抽出して alert 判定に使用する
+                # 新旧 semconv 両方を指定: OTel SDK 1.21+ では http.response.status_code、
+                # 旧版では http.status_code
+                processor:
+                  span_metrics:
+                    dimensions:
+                      - http.response.status_code
+                      - http.status_code
+                      - http.request.method
+                      - http.method
+
+  - name: loki
+    namespace: monitoring
+    chart: grafana/loki
+    version: "6.55.0"
+    values:
+      - deploymentMode: SingleBinary
+        loki:
+          auth_enabled: false
+          commonConfig:
+            path_prefix: /var/loki
+            replication_factor: 1
+          schemaConfig:
+            configs:
+              - from: "2024-04-01"
+                store: tsdb
+                object_store: filesystem
+                schema: v13
+                index:
+                  prefix: index_
+                  period: 24h
+          storage:
+            type: filesystem
+          limits_config:
+            reject_old_samples: true
+            reject_old_samples_max_age: 168h
+            volume_enabled: true
+        singleBinary:
+          replicas: 1
+          persistence:
+            enabled: true
+            size: 10Gi
+            storageClass: gp3
+        gateway:
+          enabled: false
+        lokiCanary:
+          enabled: false
+        test:
+          enabled: false
+        chunksCache:
+          enabled: false
+        resultsCache:
+          enabled: false
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        backend:
+          replicas: 0
+
+  - name: alloy
+    namespace: monitoring
+    chart: grafana/alloy
+    version: "1.8.2"
+    values:
+      # E-1 対策: Alloy 自己メトリクス (otelcol_*) を Prometheus に scrape させる
+      # kube-prometheus-stack の serviceMonitorSelector で自動検出される
+      - serviceMonitor:
+          enabled: true
+          interval: 30s
+          # Prometheus Operator がデフォルトで scrape する label を付与
+          additionalLabels:
+            release: kube-prometheus-stack
+      - alloy:
+          extraPorts:
+            - name: otlp-grpc
+              port: 4317
+              targetPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              port: 4318
+              targetPort: 4318
+              protocol: TCP
+          configMap:
+            create: true
+            content: |
+              // OTLP Receiver (gRPC and HTTP)
+              otelcol.receiver.otlp "default" {
+                grpc {
+                  endpoint = "0.0.0.0:4317"
+                }
+                http {
+                  endpoint = "0.0.0.0:4318"
+                }
+                output {
+                  metrics = [otelcol.processor.batch.default.input]
+                  traces  = [otelcol.processor.batch.default.input]
+                  logs    = [otelcol.processor.batch.default.input]
+                }
+              }
+
+              // Batch Processor (optional but recommended)
+              otelcol.processor.batch "default" {
+                output {
+                  metrics = [otelcol.exporter.prometheus.default.input]
+                  traces  = [otelcol.exporter.otlp.tempo.input]
+                  logs    = [otelcol.exporter.loki.default.input]
+                }
+              }
+              // Exporter: Loki (Logs)
+              otelcol.exporter.loki "default" {
+                forward_to = [loki.write.default.receiver]
+              }
+              loki.write "default" {
+                endpoint {
+                  url = "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+                }
+              }
+              // Exporter: OTLP to Tempo (Traces)
+              otelcol.exporter.otlp "tempo" {
+                client {
+                  endpoint = "tempo.monitoring.svc.cluster.local:4317"
+                  tls {
+                    insecure = true
+                  }
+                }
+              }
+              // Exporter: Prometheus Remote Write (Metrics)
+              otelcol.exporter.prometheus "default" {
+                forward_to = [prometheus.remote_write.default.receiver]
+              }
+
+              prometheus.remote_write "default" {
+                endpoint {
+                  url = "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+                }
+              }
+
+              // Pattern C: vcluster-3 の go-api-server /metrics を scrape
+              // vcluster-3 の Pod はホスト側 vcluster-3 namespace に同期される
+              // prometheus.io/scrape アノテーションを持つ Pod を自動検出して scrape する
+              discovery.kubernetes "vcluster3_pods" {
+                role = "pod"
+                namespaces {
+                  names = ["vcluster-3"]
+                }
+              }
+
+              discovery.relabel "vcluster3_metrics" {
+                targets = discovery.kubernetes.vcluster3_pods.targets
+
+                // prometheus.io/scrape: "true" のアノテーションがある Pod のみ対象
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_scrape"]
+                  regex         = "true"
+                  action        = "keep"
+                }
+                // scrape パスをアノテーションから取得（デフォルト: /metrics）
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_path"]
+                  target_label  = "__metrics_path__"
+                  regex         = "(.+)"
+                }
+                // scrape ポートをアノテーションから取得
+                rule {
+                  source_labels = ["__address__", "__meta_kubernetes_pod_annotation_prometheus_io_port"]
+                  target_label  = "__address__"
+                  regex         = "([^:]+)(?::\\d+)?;(\\d+)"
+                  replacement   = "$1:$2"
+                }
+                // vcluster_name ラベルを付与して Grafana で識別可能にする
+                rule {
+                  target_label = "vcluster_name"
+                  replacement  = "vcluster-3"
+                }
+                // service_name ラベルを付与して Pattern A/B と同一軸で比較可能にする
+                rule {
+                  target_label = "service_name"
+                  replacement  = "go-api-server-pattern-c"
+                }
+              }
+
+              prometheus.scrape "vcluster3" {
+                targets    = discovery.relabel.vcluster3_metrics.output
+                forward_to = [prometheus.remote_write.default.receiver]
+              }
 
   - name: kube-prometheus-stack
     namespace: monitoring
     chart: prometheus-community/kube-prometheus-stack
-    version: "77.13.0"
+    version: "86.2.0"
+    createNamespace: true
     values:
-    - prometheusSpec:
-        scrapeInterval: "15s"
-        evaluationInterval: "15s"
-      additionalScrapeConfigs:
-      - job_name: 'prometheus'
-        static_configs:
-        - targets: ['localhost:9090']
-      persistentVolumes:
-        enabled: true
-      persistentVolumeClaims:
-        enabled: true
+      - grafana:
+          datasources:
+            datasources.yaml:
+              apiVersion: 1
+              datasources:
+                - name: Tempo
+                  type: tempo
+                  uid: tempo
+                  url: http://tempo.monitoring:3200
+                  access: proxy
+                  jsonData:
+                    tracesToLogs:
+                      datasourceUid: loki
+                    nodeGraph:
+                      enabled: true
+                    serviceMap:
+                      datasourceUid: prometheus
+                - name: Loki
+                  type: loki
+                  uid: loki
+                  url: http://loki.monitoring:3100
+                  access: proxy
+                  jsonData:
+                    derivedFields:
+                      - datasourceUid: tempo
+                        matcherRegex: '"traceID":"(\w+)"'
+                        name: TraceID
+                        url: '$${__value.raw}'
+          serviceMonitor:
+            enabled: true
+            interval: 30s
+            scrapeTimeout: 20s
+          # アラートルール ConfigMap をサイドカーで自動ロード
+          sidecar:
+            alerts:
+              enabled: true
+              label: grafana_alert
+              labelValue: "1"
+              searchNamespace: monitoring
+
+      # Prometheus Operator 設定
+      - prometheusOperator:
+          enabled: true
+          admissionWebhooks:
+            enabled: false
+          tls:
+            enabled: false
+          rbac:
+            create: true
+          serviceAccount:
+            create: true
+            name: kube-prometheus-stack-operator
+          hostNetwork: true
+          dnsPolicy: ClusterFirstWithHostNet
+
+      # Prometheus 本体の設定
+      - prometheus:
+          enabled: true
+          prometheusSpec:
+            scrapeInterval: "15s"
+            evaluationInterval: "15s"
+            enableRemoteWriteReceiver: true
+            tsdbSpec:
+              outOfOrderTimeWindow: 1m
+            serviceMonitorSelectorNilUsesHelmValues: false
+            serviceMonitorSelector: {}
+            serviceMonitorNamespaceSelector: {}
+            additionalScrapeConfigs:
+              - job_name: 'prometheus'
+                static_configs:
+                  - targets: ['localhost:9090']
+              - job_name: kube-etcd
+                kubernetes_sd_configs:
+                  - role: node
+                scheme: https
+                tls_config:
+                  ca_file: /etc/prometheus/secrets/etcd-client-cert/etcd-ca
+                  cert_file: /etc/prometheus/secrets/etcd-client-cert/etcd-client
+                  key_file: /etc/prometheus/secrets/etcd-client-cert/etcd-client-key
+                relabel_configs:
+                  - action: labelmap
+                    regex: __meta_kubernetes_node_label_(.+)
+                  - source_labels: [__address__]
+                    action: replace
+                    target_label: __address__
+                    regex: ([^:;]+):(\d+)
+                    replacement: ${1}:2379
+                  - source_labels: [__meta_kubernetes_node_name]
+                    action: keep
+                    regex: .*mst.*
+                  - source_labels: [__meta_kubernetes_node_name]
+                    action: replace
+                    target_label: node
+                    regex: (.*)
+                    replacement: ${1}
+                metric_relabel_configs:
+                  - regex: (kubernetes_io_hostname|failure_domain_beta_kubernetes_io_region|beta_kubernetes_io_os|beta_kubernetes_io_arch|beta_kubernetes_io_instance_type|failure_domain_beta_kubernetes_io_zone)
+                    action: labeldrop
+              - job_name: 'kubernetes-pods'
+                kubernetes_sd_configs:
+                  - role: pod
+                relabel_configs:
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                    action: keep
+                    regex: true
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+                    action: replace
+                    target_label: __metrics_path__
+                    regex: (.+)
+                  - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+                    action: replace
+                    regex: ([^:]+)(?::\d+)?;(\d+)
+                    replacement: $1:$2
+                    target_label: __address__
+                  - source_labels: [__meta_kubernetes_namespace]
+                    action: replace
+                    target_label: namespace
+                  - source_labels: [__meta_kubernetes_pod_label_app]
+                    action: replace
+                    target_label: job
+
+  # Beyla: eBPF ベースのゼロコード自動計装
+  # vCluster-1/2/3 の go-api-server (port 8080) を eBPF でインターセプトし
+  # OTLP traces/metrics を Alloy へ送信する
+  - name: beyla
+    namespace: beyla-system
+    chart: grafana/beyla
+    version: "1.16.8"
+    createNamespace: true
+    values:
+      - preset: application
+        # port 8080 で待ち受けるプロセスを自動計装
+        # vcluster-1/2/3 の go-api-server のみを対象とする
+        # config.data はチャート内で YAML マップとして扱われるため
+        # ブロックスカラー (|) ではなくネストした YAML で記述する
+        config:
+          data:
+            # vcluster-3 の Pattern C (go-api-server) のみを計装対象にする
+            # OBI 3.20+ では k8s_namespace selector が glob 動作で完全には機能しないため、
+            # Pod label による selector を使用する (より確実)
+            discovery:
+              instrument:
+                - k8s_pod_labels:
+                    app: go-api-server
+                    pattern: c
+                  open_ports: "8080"
+            # k8s.namespace.name を metrics の datapoint attribute として付与する
+            # Alloy → Prometheus で k8s_namespace_name ラベルとして使用可能になる
+            # go-api-server は plain HTTP のみ。https を除外することで
+            # ssl_to_pid_tid BPF マップの作成をスキップし OOM クラッシュを防ぐ
+            otel_traces_export:
+              instrumentations:
+                - http
+            attributes:
+              kubernetes:
+                enable: true
+              select:
+                http.server.request.duration:
+                  include:
+                    - http.request.method
+                    - http.response.status.code
+                    - url.path
+                    - k8s.namespace.name
+                    - k8s.deployment.name
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: "http://alloy.monitoring.svc.cluster.local:4317"
+          OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+          BEYLA_KUBE_METADATA_ENABLE: "autodetect"
+        # eBPF にはホスト PID 名前空間と特権アクセスが必要
+        podSecurityContext:
+          hostPID: true
+        securityContext:
+          privileged: true
+          runAsUser: 0
+        # bpffs: eBPF マップの永続化に必要
+        # EKS ノードに /sys/fs/bpf が存在しない場合に DirectoryOrCreate で作成する
+        volumes:
+          - name: bpffs
+            hostPath:
+              path: /sys/fs/bpf
+              type: DirectoryOrCreate
+        volumeMounts:
+          - name: bpffs
+            mountPath: /sys/fs/bpf
+        # 全ノードにスケジュールできるよう taint を無視する
+        tolerations:
+          - operator: Exists
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi

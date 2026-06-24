@@ -38,6 +38,12 @@ variable "common_tags" {
 }
 
 variable "eks_access_entry_principal_arn" {
-  type = string
+  type        = string
   description = "EKS Access Entry principal ARN"
+}
+
+variable "ecr_repository_name" {
+  default     = "go-api-server"
+  type        = string
+  description = "ECR repository name for go-api-server"
 }

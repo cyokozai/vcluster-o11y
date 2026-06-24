@@ -1,0 +1,85 @@
+# Pattern C: Go API Server (Beyla eBPF 自動計装前提)
+# kubectl apply -f manifests/pattern-c/deploy.yaml
+#
+# Prometheus クライアント除去に伴い、/metrics エンドポイントと scrape アノテーションを削除。
+# このマニフェスト単体ではメトリクスは公開されず、Beyla DaemonSet/Helm リリースおよび Alloy への出力設定は別途ホストクラスタ側にデプロイする必要がある。
+# Beyla は eBPF により本 Pod のトラフィック等を自動計装し、収集したメトリクスを Alloy などのテレメトリ基盤へ送信する想定。
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-api-server
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-api-server
+      pattern: "c"
+  template:
+    metadata:
+      labels:
+        app: go-api-server
+        pattern: "c"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+        # Beyla (OBI 3.20+) はこの annotation を読み取って service.name を override する
+        # 結果: Prometheus / Tempo のラベルが job="go-api-server-pattern-c" に統一される
+        # (デフォルトは Pod の namespace/deployment 形式 "vcluster-3/vcluster-3" になる)
+        resource.opentelemetry.io/service.name: "go-api-server-pattern-c"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: go-api-server
+          image: <ECR_REPOSITORY_URL>:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-api-server
+  namespace: default
+spec:
+  selector:
+    app: go-api-server
+    pattern: "c"
+  ports:
+    - port: 8080
+      targetPort: 8080
